@@ -99,7 +99,7 @@
 #include <linux/cpuset.h>
 #endif
 
-#include <asm/pgtable.h>
+#include <linux/pgtable.h>
 #include <asm/pgalloc.h>
 #include <linux/uaccess.h>
 #include <asm/mmu_context.h>
