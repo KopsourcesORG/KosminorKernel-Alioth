@@ -458,6 +458,7 @@ KBUILD_LDFLAGS_MODULE := -T $(srctree)/scripts/module-common.lds
 KBUILD_LDFLAGS :=
 GCC_PLUGINS_CFLAGS :=
 CLANG_FLAGS :=
+TARGET_BUILD_VARIANT := user
 
 export ARCH SRCARCH CONFIG_SHELL HOSTCC KBUILD_HOSTCFLAGS CROSS_COMPILE LD CC
 export CPP AR NM STRIP OBJCOPY OBJDUMP PAHOLE RESOLVE_BTFIDS OBJSIZE READELF KBUILD_HOSTLDFLAGS KBUILD_HOSTLDLIBS
@@ -476,6 +477,8 @@ export KBUILD_ARFLAGS
 # tree rather than in the kernel tree. The kernel tree might
 # even be read-only.
 export MODVERDIR := $(if $(KBUILD_EXTMOD),$(firstword $(KBUILD_EXTMOD))/).tmp_versions
+
+export TARGET_BUILD_VARIANT
 
 # Files to ignore in find ... statements
 
