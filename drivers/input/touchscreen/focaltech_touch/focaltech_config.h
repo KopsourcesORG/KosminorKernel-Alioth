@@ -163,7 +163,6 @@
  */
 #define FTS_ESDCHECK_EN                         0
 
-
 /*
  * Pinctrl enable
  * default: disable
