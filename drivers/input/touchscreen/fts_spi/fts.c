@@ -7090,6 +7090,9 @@ static int fts_get_touch_super_resolution_factor(void)
 static void fts_resume_work(struct work_struct *work)
 {
 	struct fts_ts_info *info;
+#ifdef FTS_XIAOMI_TOUCHFEATURE
+	struct xiaomi_touch_pdata *pdata;
+#endif
 #ifdef CONFIG_FACTORY_BUILD
 	int retval = 0;
 #endif
@@ -7133,6 +7136,19 @@ static void fts_resume_work(struct work_struct *work)
 		fts_palm_sensor_cmd(info->palm_sensor_switch);
 		info->palm_sensor_changed = true;
 	}
+	pdata = dev_get_drvdata(get_xiaomi_touch_dev());
+	if (pdata->bump_sample_rate) {
+		pr_info("%s: bump_sample_rate is true, re-enabling it\n",
+			__func__);
+		pdata->set_update = true;
+		xiaomi_touch_interfaces.setModeValue(0, 1);
+		xiaomi_touch_interfaces.setModeValue(1, 1);
+		xiaomi_touch_interfaces.setModeValue(3, 5);
+		xiaomi_touch_interfaces.setModeValue(2, 99);
+		xiaomi_touch_interfaces.setModeValue(7, 0);
+	} else {
+		pr_info("%s: bump_sample_rate is false\n", __func__);
+	}
 #endif
 
 #ifdef TOUCH_THP_SUPPORT
@@ -7159,6 +7175,9 @@ static void fts_suspend_work(struct work_struct *work)
 	int retval = 0;
 #endif
 
+#ifdef FTS_XIAOMI_TOUCHFEATURE
+	struct xiaomi_touch_pdata *pdata;
+#endif
 	info = container_of(work, struct fts_ts_info, suspend_work);
 	/*
 	if (info->enable_touch_raw) {
@@ -7178,6 +7197,13 @@ static void fts_suspend_work(struct work_struct *work)
 		update_palm_sensor_value(0);
 		fts_palm_sensor_cmd(0);
 		info->palm_sensor_switch = false;
+	}
+	pdata = dev_get_drvdata(get_xiaomi_touch_dev());
+	if (pdata->bump_sample_rate) {
+		pr_info("%s: bump_sample_rate is true, resetting mode\n",
+			__func__);
+		pdata->set_update = false;
+		xiaomi_touch_interfaces.resetMode(0);
 	}
 #endif
 	fts_disableInterrupt();
