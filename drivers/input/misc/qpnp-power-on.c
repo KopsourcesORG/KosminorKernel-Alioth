@@ -26,6 +26,10 @@
 #include <linux/regulator/machine.h>
 #include <linux/regulator/of_regulator.h>
 
+#ifdef CONFIG_POCKET_JUDGE
+#include "../pocket-judge.h"
+#endif
+
 #define PMIC_VER_8941				0x01
 #define PMIC_VERSION_REG			0x0105
 #define PMIC_VERSION_REV4_REG			0x0103
@@ -151,6 +155,11 @@
 #define QPNP_PON_BUFFER_SIZE			9
 
 #define QPNP_POFF_REASON_UVLO			13
+
+#ifdef CONFIG_POCKET_JUDGE
+static bool pwrkey_pressed = false;
+static ktime_t pwrkey_duration;
+#endif /* CONFIG_POCKET_JUDGE */
 
 enum qpnp_pon_version {
 	QPNP_PON_GEN1_V1,
@@ -917,6 +926,9 @@ static int qpnp_pon_input_dispatch(struct qpnp_pon *pon, u32 pon_type)
 	uint pon_rt_sts;
 	u64 elapsed_us;
 	int rc;
+#ifdef CONFIG_POCKET_JUDGE
+	bool skip_report = false;
+#endif
 
 	cfg = qpnp_get_cfg(pon, pon_type);
 	if (!cfg)
@@ -965,6 +977,28 @@ static int qpnp_pon_input_dispatch(struct qpnp_pon *pon, u32 pon_type)
 		if (!key_status)
 			pon->kpdpwr_last_release_time = ktime_get();
 	}
+
+#ifdef CONFIG_POCKET_JUDGE
+	if (cfg->key_code == KEY_POWER) {
+		if (!pwrkey_pressed) { // pressed
+			pwrkey_duration = ktime_get();
+		} else { // released
+			elapsed_us = ktime_us_delta(ktime_get(), pwrkey_duration);
+			// Open safe door to exit pocket lock if held for at least 2s
+			if (pocket_judge_isInPocket() &&
+					elapsed_us >= (2 * 1000 * 1000)) {
+				pocket_judge_forceDisable();
+				// Skip key release reporting to avoid unwanted actions from OS
+				// due to long press
+				skip_report = true;
+			}
+		}
+		pwrkey_pressed ^= 1;
+	}
+	if (skip_report || pocket_judge_isInPocket()) {
+		return 0;
+	}
+#endif /* CONFIG_POCKET_JUDGE */
 
 	/*
 	 * Simulate a press event in case release event occurred without a press
