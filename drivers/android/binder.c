@@ -1204,13 +1204,13 @@ static struct binder_ref *binder_get_ref_olocked(struct binder_proc *proc,
 }
 
 /* Find the smallest unused descriptor the "slow way" */
-static u32 slow_desc_lookup_olocked(struct binder_proc *proc, u32 offset)
+static u32 slow_desc_lookup_olocked(struct binder_proc *proc)
 {
 	struct binder_ref *ref;
 	struct rb_node *n;
 	u32 desc;
 
-	desc = offset;
+	desc = 1;
 	for (n = rb_first(&proc->refs_by_desc); n; n = rb_next(n)) {
 		ref = rb_entry(n, struct binder_ref, rb_node_desc);
 		if (ref->data.desc > desc)
@@ -1231,18 +1231,21 @@ static int get_ref_desc_olocked(struct binder_proc *proc,
 				u32 *desc)
 {
 	struct dbitmap *dmap = &proc->dmap;
-	unsigned int nbits, offset;
 	unsigned long *new, bit;
+	unsigned int nbits;
 
 	/* 0 is reserved for the context manager */
-	offset = (node == proc->context->binder_context_mgr_node) ? 0 : 1;
-
-	if (!dbitmap_enabled(dmap)) {
-		*desc = slow_desc_lookup_olocked(proc, offset);
+	if (node == proc->context->binder_context_mgr_node) {
+		*desc = 0;
 		return 0;
 	}
 
-	if (dbitmap_acquire_next_zero_bit(dmap, offset, &bit) == 0) {
+	if (!dbitmap_enabled(dmap)) {
+		*desc = slow_desc_lookup_olocked(proc);
+		return 0;
+	}
+
+	if (dbitmap_acquire_first_zero_bit(dmap, &bit) == 0) {
 		*desc = bit;
 		return 0;
 	}
@@ -5348,6 +5351,7 @@ static void binder_free_proc(struct binder_proc *proc)
 	put_task_struct(proc->tsk);
 	put_cred(proc->cred);
 	binder_stats_deleted(BINDER_STAT_PROC);
+        dbitmap_free(&proc->dmap);
 	kfree(proc_wrapper(proc));
 }
 
@@ -6100,6 +6104,7 @@ static int binder_open(struct inode *nodp, struct file *filp)
 		return -ENOMEM;
 	proc = &proc_wrap->proc;
 
+	dbitmap_init(&proc->dmap);
 	spin_lock_init(&proc->inner_lock);
 	spin_lock_init(&proc->outer_lock);
 	get_task_struct(current->group_leader);
