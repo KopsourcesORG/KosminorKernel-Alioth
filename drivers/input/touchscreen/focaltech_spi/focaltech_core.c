@@ -65,6 +65,9 @@
 * Global variable or extern global variabls/functions
 *****************************************************************************/
 struct fts_ts_data *fts_data;
+#ifdef CONFIG_POCKET_JUDGE
+bool fts_spi_ts_probed = false;
+#endif
 
 /*****************************************************************************
 * Static function prototypes
@@ -2489,6 +2492,17 @@ static int fts_get_touch_super_resolution_factor(void)
 
 #endif
 
+#ifdef CONFIG_POCKET_JUDGE
+void fts_spi_ts_inpocket_set(bool active)
+{
+	if (active) {
+		fts_irq_disable();
+	} else {
+		fts_irq_enable();
+	}
+}
+#endif /* CONFIG_POCKET_JUDGE */
+
 /*****************************************************************************
 * TP Driver
 *****************************************************************************/
@@ -2548,6 +2562,10 @@ static int fts_ts_probe(struct spi_device *spi)
 
 	fts_init_touch_mode_data(ts_data);
 	xiaomitouch_register_modedata(&xiaomi_touch_interfaces);
+#endif
+
+#ifdef CONFIG_POCKET_JUDGE
+	fts_spi_ts_probed = true;
 #endif
 
 	FTS_INFO("Touch Screen(SPI BUS) driver prboe successfully");

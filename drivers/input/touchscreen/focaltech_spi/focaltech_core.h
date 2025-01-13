@@ -330,4 +330,10 @@ int fts_ex_mode_recovery(struct fts_ts_data *ts_data);
 
 void fts_irq_disable(void);
 void fts_irq_enable(void);
+
+/* Pocket Judge */
+#ifdef CONFIG_POCKET_JUDGE
+void fts_spi_ts_inpocket_set(bool active);
+#endif
+
 #endif /* __LINUX_FOCALTECH_CORE_H__ */

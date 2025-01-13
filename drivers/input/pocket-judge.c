@@ -17,6 +17,10 @@
 
 #include "pocket-judge.h"
 
+#ifdef CONFIG_TOUCHSCREEN_FOCALTECH
+#include "touchscreen/focaltech_spi/focaltech_core.h"
+#endif
+
 /**
  * This driver maintains a sysfs interface used by the pocket bridge system
  * service. It enables and disables interrupts based on pocket state to
@@ -26,11 +30,19 @@
  * @hide
  */
 
+#ifdef CONFIG_TOUCHSCREEN_FOCALTECH
+extern bool fts_spi_ts_probed;
+#endif
+
 static char pocket_judge_inpocket_state = '0';
 static bool pocket_judge_inpocket = false;
 
 static void pocket_judge_update(void)
 {
+#ifdef CONFIG_TOUCHSCREEN_FOCALTECH
+	if (fts_spi_ts_probed)
+		fts_spi_ts_inpocket_set(pocket_judge_inpocket);
+#endif
 }
 
 bool pocket_judge_isInPocket(void) {
