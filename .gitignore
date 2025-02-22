@@ -142,3 +142,8 @@ Android.bp
 
 # backups
 *.bak
+
+# patches
+*.patch
+*.rej
+*.orig
