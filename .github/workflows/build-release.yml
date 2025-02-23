@@ -1,16 +1,16 @@
-name: Build K-Nel Alioth
+name: Build K-Nel Alioth (Release Versions)
 on:
   workflow_call:
   workflow_dispatch:
-    inputs:
+      inputs:
         LOCALVERSIONNAME:
             description: 'Kernel Local Version Name'
             required: true
-            default: 'Canary-Build' 
+            default: 'X.X' 
 
 jobs:
-  build:
-    name: Build K-Nel Alioth by ${{ github.actor }}
+  build-vanilla:
+    name: Build K-Nel Alioth (Release Versions) by ${{ github.actor }}
     runs-on: ubuntu-22.04
     steps:
 
@@ -48,6 +48,80 @@ jobs:
       - name: Get Kernel source
         run: |
           git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.branch-names.outputs.current_branch }} $GITHUB_WORKSPACE/workdir/source
+          rm -rf $GITHUB_WORKSPACE/workdir/source/.git
+          
+      - name: Build Kernel
+        run: |
+          export LOCALVERSION=Release-${{ github.event.inputs.LOCALVERSIONNAME }}
+          export KBUILD_BUILD_HOST=Github-Action
+          export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
+          export ARCH="arm64"
+          export PATH="$GITHUB_WORKSPACE/workdir/toolchain/bin:$PATH"
+          export LD_LIBRARY_PATH="$GITHUB_WORKSPACE/workdir/toolchain/lib64:$LD_LIBRARY_PATH"
+          export KBUILD_COMPILER_STRING=$(clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')
+          export KBUILD_LINKER_STRING=$(ld.lld --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//' | sed 's/(compatible with [^)]*)//')
+          export CC=clang
+          export LLVM=1
+          export LLVM_IAS=1
+          export CLANG_TRIPLE="aarch64-linux-gnu-"
+          export CROSS_COMPILE="aarch64-linux-android-"
+          cd $GITHUB_WORKSPACE/workdir/source
+          make O=out alioth_k-nel_defconfig
+          make -j$(nproc --all) O=out CC="ccache clang" HOSTCC="ccache gcc" HOSTCXX="ccache g++" 2>&1
+
+      - name: Pack Kernel
+        run: |
+          find $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dts/vendor/qcom/ -name '*.dtb' -exec cat {} + >$GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dtb
+          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image $GITHUB_WORKSPACE/workdir/source/android/Packer
+          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
+          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dtbo.img $GITHUB_WORKSPACE/workdir/source/android/Packer
+          
+      - name: Upload Kernel Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: K-Nel_Alioth_AK3&APM_Release_${{ github.event.inputs.LOCALVERSIONNAME }}
+          path: workdir/source/android/Packer/*
+          
+  build-ksu:
+    name: Build K-Nel Alioth (Release Versions) by ${{ github.actor }}
+    runs-on: ubuntu-22.04
+    steps:
+
+      - name: Set Beijing timezone
+        uses: szenius/set-timezone@v1.2
+        with:
+          timezoneLinux: "Asia/Shanghai"
+
+      - name: Get branch names.
+        id: branch-names
+        uses: tj-actions/branch-names@v8
+
+      - name: Set SWAP to 5GiB
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 5
+
+      - name: Clean useless files
+        run: |
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+      - name: Initialize compilation environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install git automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib gcc-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python2 python3 ccache git-lfs gnupg imagemagick libelf-dev libncurses5 libncurses5-dev libsdl1.2-dev rsync adb fastboot cpio -y
+          mkdir -p $GITHUB_WORKSPACE/workdir
+          cd $GITHUB_WORKSPACE/workdir
+          echo "BUILD_TIME=$(TZ=Asia/Shanghai date "+%Y%m%d%H%M")" >> $GITHUB_ENV
+
+      - name: Get Toolchain
+        run: |
+          git clone -q https://gitlab.com/ThankYouMario/android_prebuilts_clang-standalone.git --depth 1 $GITHUB_WORKSPACE/workdir/toolchain
+
+      - name: Get Kernel source
+        run: |
+          git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.branch-names.outputs.current_branch }} $GITHUB_WORKSPACE/workdir/source
+          rm -rf $GITHUB_WORKSPACE/workdir/source/.git
           
       - name: Integrate KernelSU Next
         run: |
@@ -58,7 +132,7 @@ jobs:
           
       - name: Build Kernel
         run: |
-          export LOCALVERSION=${{ github.event.inputs.LOCALVERSIONNAME }}
+          export LOCALVERSION=Release-${{ github.event.inputs.LOCALVERSIONNAME }}
           export KBUILD_BUILD_HOST=Github-Action
           export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
           export ARCH="arm64"
@@ -86,6 +160,6 @@ jobs:
       - name: Upload Kernel Package
         uses: actions/upload-artifact@v4
         with:
-          name: K-Nel_Alioth_Canary_AK3&APM_${{ env.BUILD_TIME }}
+          name: K-Nel_Alioth_KSU_AK3&APM_Release_${{ github.event.inputs.LOCALVERSIONNAME }}
           path: workdir/source/android/Packer/*
           
