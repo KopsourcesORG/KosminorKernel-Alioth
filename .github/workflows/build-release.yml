@@ -71,10 +71,7 @@ jobs:
 
       - name: Pack Kernel
         run: |
-          find $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dts/vendor/qcom/ -name '*.dtb' -exec cat {} + >$GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dtb
-          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image $GITHUB_WORKSPACE/workdir/source/android/Packer
-          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
-          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dtbo.img $GITHUB_WORKSPACE/workdir/source/android/Packer
+          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image.gz-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
           
       - name: Upload Kernel Package
         uses: actions/upload-artifact@v4
@@ -152,10 +149,7 @@ jobs:
 
       - name: Pack Kernel
         run: |
-          find $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dts/vendor/qcom/ -name '*.dtb' -exec cat {} + >$GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dtb
-          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image $GITHUB_WORKSPACE/workdir/source/android/Packer
-          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
-          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dtbo.img $GITHUB_WORKSPACE/workdir/source/android/Packer
+          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image.gz-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
           
       - name: Upload Kernel Package
         uses: actions/upload-artifact@v4
