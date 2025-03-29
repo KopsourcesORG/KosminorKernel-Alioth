@@ -71,7 +71,7 @@ jobs:
 
       - name: Pack Kernel
         run: |
-          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image.gz-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
+          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
           
       - name: Upload Kernel Package
         uses: actions/upload-artifact@v4
@@ -149,7 +149,7 @@ jobs:
 
       - name: Pack Kernel
         run: |
-          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image.gz-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
+          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
           
       - name: Upload Kernel Package
         uses: actions/upload-artifact@v4
