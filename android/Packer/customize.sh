@@ -1,5 +1,5 @@
 #/usr/bin/sh
-# K-Nel A-Only Installer
+# K-Nel AB Installer
 # By KeJia
 
 ui_print " "
