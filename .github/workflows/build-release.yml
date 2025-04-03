@@ -1,16 +1,12 @@
-name: Build K-Nel Alioth (Release Versions)
+name: Build K-Nel Alioth (Release)
 on:
-  workflow_call:
-  workflow_dispatch:
-      inputs:
-        LOCALVERSIONNAME:
-            description: 'Kernel Local Version Name'
-            required: true
-            default: 'X.X' 
+  push:
+    tags:
+      - "R-*"
 
 jobs:
   build-vanilla:
-    name: Build K-Nel Alioth (Release Versions) by ${{ github.actor }}
+    name: Build K-Nel Alioth (Release) by ${{ github.actor }}
     runs-on: ubuntu-22.04
     steps:
 
@@ -19,9 +15,10 @@ jobs:
         with:
           timezoneLinux: "Asia/Shanghai"
 
-      - name: Get branch names.
-        id: branch-names
-        uses: tj-actions/branch-names@v8
+      - name: Get Tag Name
+        id: get-tag
+        run: |
+          echo "TAG_NAME=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
 
       - name: Set SWAP to 5GiB
         uses: pierotofy/set-swap-space@master
@@ -47,12 +44,12 @@ jobs:
 
       - name: Get Kernel source
         run: |
-          git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.branch-names.outputs.current_branch }} $GITHUB_WORKSPACE/workdir/source
+          git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
           rm -rf $GITHUB_WORKSPACE/workdir/source/.git
           
       - name: Build Kernel
         run: |
-          export LOCALVERSION=Release-${{ github.event.inputs.LOCALVERSIONNAME }}
+          export LOCALVERSION=${{ steps.get-tag.outputs.TAG_NAME }}
           export KBUILD_BUILD_HOST=Github-Action
           export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
           export ARCH="arm64"
@@ -72,15 +69,16 @@ jobs:
       - name: Pack Kernel
         run: |
           cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
+          sed -i '/description/ s/$/ Just installed K-Nel Alioth version: ${{ steps.get-tag.outputs.TAG_NAME }} (NON-KSU)/'  $GITHUB_WORKSPACE/workdir/source/android/Packer/module.prop
           
       - name: Upload Kernel Package
         uses: actions/upload-artifact@v4
         with:
-          name: K-Nel_Alioth_AK3&APM_Release_${{ github.event.inputs.LOCALVERSIONNAME }}
+          name: K-Nel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_AK3&APM
           path: workdir/source/android/Packer/*
           
   build-ksu:
-    name: Build K-Nel Alioth (Release Versions) by ${{ github.actor }}
+    name: Build K-Nel Alioth (Release) by ${{ github.actor }}
     runs-on: ubuntu-22.04
     steps:
 
@@ -89,9 +87,10 @@ jobs:
         with:
           timezoneLinux: "Asia/Shanghai"
 
-      - name: Get branch names.
-        id: branch-names
-        uses: tj-actions/branch-names@v8
+      - name: Get Tag Name
+        id: get-tag
+        run: |
+          echo "TAG_NAME=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
 
       - name: Set SWAP to 5GiB
         uses: pierotofy/set-swap-space@master
@@ -117,7 +116,7 @@ jobs:
 
       - name: Get Kernel source
         run: |
-          git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.branch-names.outputs.current_branch }} $GITHUB_WORKSPACE/workdir/source
+          git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
           rm -rf $GITHUB_WORKSPACE/workdir/source/.git
           
       - name: Integrate KernelSU Next
@@ -129,7 +128,7 @@ jobs:
           
       - name: Build Kernel
         run: |
-          export LOCALVERSION=Release-${{ github.event.inputs.LOCALVERSIONNAME }}
+          export LOCALVERSION=${{ steps.get-tag.outputs.TAG_NAME }}
           export KBUILD_BUILD_HOST=Github-Action
           export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
           export ARCH="arm64"
@@ -150,10 +149,42 @@ jobs:
       - name: Pack Kernel
         run: |
           cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
+          sed -i '/description/ s/$/ Just installed K-Nel Alioth version: ${{ steps.get-tag.outputs.TAG_NAME }} (With KSUN&SUSFS)/'  $GITHUB_WORKSPACE/workdir/source/android/Packer/module.prop
           
       - name: Upload Kernel Package
         uses: actions/upload-artifact@v4
         with:
-          name: K-Nel_Alioth_KSU_AK3&APM_Release_${{ github.event.inputs.LOCALVERSIONNAME }}
+          name: K-Nel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_AK3&APM
           path: workdir/source/android/Packer/*
           
+  Release: 
+    needs:
+      - build-vanilla
+      - build-ksu
+    runs-on: ubuntu-latest
+    steps:
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        
+      - name: Get Tag Name
+        id: get-tag
+        run: |
+          echo "TAG_NAME=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
+        
+      - name: Pack artifacts
+        run: |
+          cd "$GITHUB_WORKSPACE/K-Nel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_AK3&APM"
+          zip -r "K-Nel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_AK3&APM.zip" *
+          mv "K-Nel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_AK3&APM.zip" ../
+          cd "$GITHUB_WORKSPACE/K-Nel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_AK3&APM"
+          zip -r "K-Nel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_AK3&APM.zip" *
+          mv "K-Nel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_AK3&APM.zip" ../
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.TOKEN }}
+          files: |
+            ${{github.workspace}}/K-Nel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_AK3&APM.zip
+            ${{github.workspace}}/K-Nel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_AK3&APM.zip

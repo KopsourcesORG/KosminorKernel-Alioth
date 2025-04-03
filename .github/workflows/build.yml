@@ -1,12 +1,8 @@
 name: Build K-Nel Alioth
 on:
-  workflow_call:
-  workflow_dispatch:
-    inputs:
-        LOCALVERSIONNAME:
-            description: 'Kernel Local Version Name'
-            required: true
-            default: 'Canary-Build' 
+  push:
+    tags:
+      - "C-*"
 
 jobs:
   build:
@@ -19,9 +15,10 @@ jobs:
         with:
           timezoneLinux: "Asia/Shanghai"
 
-      - name: Get branch names.
-        id: branch-names
-        uses: tj-actions/branch-names@v8
+      - name: Get Tag Name
+        id: get-tag
+        run: |
+          echo "TAG_NAME=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
 
       - name: Set SWAP to 5GiB
         uses: pierotofy/set-swap-space@master
@@ -47,7 +44,7 @@ jobs:
 
       - name: Get Kernel source
         run: |
-          git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.branch-names.outputs.current_branch }} $GITHUB_WORKSPACE/workdir/source
+          git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
           
       - name: Integrate KernelSU Next
         run: |
@@ -58,7 +55,7 @@ jobs:
           
       - name: Build Kernel
         run: |
-          export LOCALVERSION=${{ github.event.inputs.LOCALVERSIONNAME }}
+          export LOCALVERSION=${{ steps.get-tag.outputs.TAG_NAME }}
           export KBUILD_BUILD_HOST=Github-Action
           export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
           export ARCH="arm64"
@@ -83,6 +80,6 @@ jobs:
       - name: Upload Kernel Package
         uses: actions/upload-artifact@v4
         with:
-          name: K-Nel_Alioth_Canary_AK3&APM_${{ env.BUILD_TIME }}
+          name: K-Nel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_AK3&APM_${{ env.BUILD_TIME }}
           path: workdir/source/android/Packer/*
           
