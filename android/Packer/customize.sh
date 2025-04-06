@@ -22,7 +22,7 @@ dd if=/dev/block/by-name/boot$bootslot of=$MODPATH/boot.img
 ui_print "- Unpacking 'Boot' Image..."
 ./magiskboot unpack $MODPATH/boot.img
 ui_print "- Spliting The Kernel Package And Uploading The Kernel..."
-./magiskboot split $MODPATH/Image-dtb
+./magiskboot split $MODPATH/Image.gz-dtb
 ui_print "- Repacking 'Boot' Image..."
 ./magiskboot repack $MODPATH/boot.img
 ui_print "- Flashing 'Boot' Image..."

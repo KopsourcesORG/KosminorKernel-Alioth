@@ -7,18 +7,13 @@ on:
 jobs:
   build-vanilla:
     name: Build K-Nel Alioth (Release) by ${{ github.actor }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
       - name: Set Beijing timezone
         uses: szenius/set-timezone@v1.2
         with:
           timezoneLinux: "Asia/Shanghai"
-
-      - name: Get Tag Name
-        id: get-tag
-        run: |
-          echo "TAG_NAME=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
 
       - name: Set SWAP to 5GiB
         uses: pierotofy/set-swap-space@master
@@ -29,11 +24,16 @@ jobs:
         run: |
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          
+      - name: Get Tag Name
+        id: get-tag
+        run: |
+          echo "TAG_NAME=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
 
       - name: Initialize compilation environment
         run: |
           sudo apt-get update
-          sudo apt-get install git automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib gcc-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python2 python3 ccache git-lfs gnupg imagemagick libelf-dev libncurses5 libncurses5-dev libsdl1.2-dev rsync adb fastboot cpio -y
+          sudo apt-get install git automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib gcc-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3 ccache git-lfs gnupg imagemagick libelf-dev libncurses5-dev libsdl1.2-dev rsync adb fastboot cpio libstdc++6 -y
           mkdir -p $GITHUB_WORKSPACE/workdir
           cd $GITHUB_WORKSPACE/workdir
           echo "BUILD_TIME=$(TZ=Asia/Shanghai date "+%Y%m%d%H%M")" >> $GITHUB_ENV
@@ -68,7 +68,11 @@ jobs:
 
       - name: Pack Kernel
         run: |
-          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
+          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image .
+          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dts/qcom/*.dtb .
+          gzip -k Image Image.gz
+          cat Image.gz *.dtb > Image.gz-dtb
+          cp Image.gz-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
           sed -i '/description/ s/$/ Just installed K-Nel Alioth version: ${{ steps.get-tag.outputs.TAG_NAME }} (NON-KSU)/'  $GITHUB_WORKSPACE/workdir/source/android/Packer/module.prop
           
       - name: Upload Kernel Package
@@ -79,18 +83,13 @@ jobs:
           
   build-ksu:
     name: Build K-Nel Alioth (Release) by ${{ github.actor }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
       - name: Set Beijing timezone
         uses: szenius/set-timezone@v1.2
         with:
           timezoneLinux: "Asia/Shanghai"
-
-      - name: Get Tag Name
-        id: get-tag
-        run: |
-          echo "TAG_NAME=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
 
       - name: Set SWAP to 5GiB
         uses: pierotofy/set-swap-space@master
@@ -101,11 +100,16 @@ jobs:
         run: |
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          
+      - name: Get Tag Name
+        id: get-tag
+        run: |
+          echo "TAG_NAME=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
 
       - name: Initialize compilation environment
         run: |
           sudo apt-get update
-          sudo apt-get install git automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib gcc-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 lib32ncurses5-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python2 python3 ccache git-lfs gnupg imagemagick libelf-dev libncurses5 libncurses5-dev libsdl1.2-dev rsync adb fastboot cpio -y
+          sudo apt-get install git automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib gcc-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python3 ccache git-lfs gnupg imagemagick libelf-dev libncurses5-dev libsdl1.2-dev rsync adb fastboot cpio libstdc++6 -y
           mkdir -p $GITHUB_WORKSPACE/workdir
           cd $GITHUB_WORKSPACE/workdir
           echo "BUILD_TIME=$(TZ=Asia/Shanghai date "+%Y%m%d%H%M")" >> $GITHUB_ENV
@@ -119,12 +123,12 @@ jobs:
           git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
           rm -rf $GITHUB_WORKSPACE/workdir/source/.git
           
-      - name: Integrate KernelSU Next
+      - name: Integrate SukiSU Ultra
         run: |
           cd $GITHUB_WORKSPACE/workdir/source
           rm -rf KernelSU
-          curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next-susfs
-          sed -i -e '$a\'$'\n''CONFIG_KSU=y\nCONFIG_KSU_SUSFS=y\nCONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y\nCONFIG_KSU_SUSFS_SUS_PATH=y\nCONFIG_KSU_SUSFS_SUS_MOUNT=y\nCONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y\nCONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y\nCONFIG_KSU_SUSFS_SUS_KSTAT=y\nCONFIG_KSU_SUSFS_TRY_UMOUNT=y\nCONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y\nCONFIG_KSU_SUSFS_SPOOF_UNAME=y\nCONFIG_KSU_SUSFS_ENABLE_LOG=y\nCONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y\nCONFIG_KSU_SUSFS_OPEN_REDIRECT=y' arch/arm64/configs/alioth_k-nel_defconfig
+          curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/susfs-dev/kernel/setup.sh" | bash -s susfs-dev
+          sed -i -e '$a\'$'\n''CONFIG_KSU=y\nCONFIG_KPM=y\nCONFIG_KSU_SUSFS=y\nCONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y\nCONFIG_KSU_SUSFS_SUS_PATH=y\nCONFIG_KSU_SUSFS_SUS_MOUNT=y\nCONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y\nCONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y\nCONFIG_KSU_SUSFS_SUS_KSTAT=y\nCONFIG_KSU_SUSFS_TRY_UMOUNT=y\nCONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y\nCONFIG_KSU_SUSFS_SPOOF_UNAME=y\nCONFIG_KSU_SUSFS_ENABLE_LOG=y\nCONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y\nCONFIG_KSU_SUSFS_OPEN_REDIRECT=y' arch/arm64/configs/alioth_k-nel_defconfig
           
       - name: Build Kernel
         run: |
@@ -146,10 +150,25 @@ jobs:
           make O=out alioth_k-nel_defconfig
           make -j$(nproc --all) O=out CC="ccache clang" HOSTCC="ccache gcc" HOSTCXX="ccache g++" 2>&1
 
-      - name: Pack Kernel
+      - name: Patch SukiSU Ultra KPM
+        if: env.CHECK_FILE_IS_OK == 'true'
         run: |
-          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
-          sed -i '/description/ s/$/ Just installed K-Nel Alioth version: ${{ steps.get-tag.outputs.TAG_NAME }} (With KSUN&SUSFS)/'  $GITHUB_WORKSPACE/workdir/source/android/Packer/module.prop
+          cd $GITHUB_WORKSPACE/workdir/
+          git clone https://${{ secrets.TOKEN }}@github.com/KJ-Network/SukiSU-Ultra-KPM-Patcher.git --depth 1
+          cd SukiSU-Ultra-KPM-Patcher
+          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image .
+          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dts/qcom/*.dtb .
+          chmod +x patch_linux
+          ./patch_linux
+          mv -f oImage Image
+          gzip -k Image Image.gz
+          cat Image.gz *.dtb > Image.gz-dtb
+
+      - name: Pack Kernel
+        if: env.CHECK_FILE_IS_OK == 'true'
+        run: |
+          cp $GITHUB_WORKSPACE/workdir/SukiSU-Ultra-KPM-Patcher/Image.gz-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer/
+          sed -i '/description/ s/$/ Just installed K-Nel Alioth version: ${{ steps.get-tag.outputs.TAG_NAME }} (With SukiSU Ultra, KPM, SUSFS)/'  $GITHUB_WORKSPACE/workdir/source/android/Packer/module.prop
           
       - name: Upload Kernel Package
         uses: actions/upload-artifact@v4
