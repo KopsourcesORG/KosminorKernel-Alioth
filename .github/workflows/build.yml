@@ -74,7 +74,6 @@ jobs:
           make -j$(nproc --all) O=out CC="ccache clang" HOSTCC="ccache gcc" HOSTCXX="ccache g++" 2>&1
 
       - name: Patch SukiSU Ultra KPM
-        if: env.CHECK_FILE_IS_OK == 'true'
         run: |
           cd $GITHUB_WORKSPACE/workdir/
           git clone https://${{ secrets.TOKEN }}@github.com/KJ-Network/SukiSU-Ultra-KPM-Patcher.git --depth 1
@@ -88,7 +87,6 @@ jobs:
           cat Image.gz *.dtb > Image.gz-dtb
 
       - name: Pack Kernel
-        if: env.CHECK_FILE_IS_OK == 'true'
         run: |
           cp $GITHUB_WORKSPACE/workdir/SukiSU-Ultra-KPM-Patcher/Image.gz-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer/
           sed -i '/description/ s/$/ Just installed K-Nel Alioth version: ${{ steps.get-tag.outputs.TAG_NAME }}/'  $GITHUB_WORKSPACE/workdir/source/android/Packer/module.prop
