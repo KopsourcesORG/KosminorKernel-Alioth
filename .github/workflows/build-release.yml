@@ -71,7 +71,7 @@ jobs:
       - name: Pack Kernel
         run: |
           cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image .
-          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dts/qcom/*.dtb .
+          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dts/vendor/qcom/*.dtb .
           gzip -k Image Image.gz
           cat Image.gz *.dtb > Image.gz-dtb
           cp Image.gz-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer
@@ -159,7 +159,7 @@ jobs:
           git clone https://${{ secrets.TOKEN }}@github.com/KJ-Network/SukiSU-Ultra-KPM-Patcher.git --depth 1
           cd SukiSU-Ultra-KPM-Patcher
           cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image .
-          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dts/qcom/*.dtb .
+          cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dts/vendor/qcom/*.dtb .
           chmod +x patch_linux
           ./patch_linux
           mv -f oImage Image
