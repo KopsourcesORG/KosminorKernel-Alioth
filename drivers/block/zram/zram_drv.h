@@ -53,6 +53,7 @@ enum zram_pageflags {
 	ZRAM_HUGE,	/* Incompressible page */
 	ZRAM_COMPRESS_LOW, /*lower than aim compaction ratio */
 	ZRAM_IDLE,	/* not accessed page since last idle marking */
+	ZRAM_IMPORTANT,	/* the important page */
 
 	__NR_ZRAM_PAGEFLAGS,
 };
@@ -65,17 +66,6 @@ enum zram_pageflags {
 #define ZRAM_WB_IDLE_MAX (10U)
 
 #define ZRAM_WB_IDLE_DEFAULT ZRAM_WB_IDLE_MIN
-
-#ifdef CONFIG_ZRAM_WRITEBACK
-#define MAX_WRITEBACK_ORDER		5
-#define MAX_WRITEBACK_SIZE		(1 << MAX_WRITEBACK_ORDER)
-
-struct writeback_batch_pages
-{
-	struct page *page;
-	int index;
-};
-#endif
 
 /*-- Data structures */
 
@@ -109,6 +99,8 @@ struct zram_stats {
 	atomic64_t notify_free;	/* no. of swap slot free notifications */
 	atomic64_t same_pages;		/* no. of same element filled pages */
 	atomic64_t huge_pages;		/* no. of huge pages */
+	atomic64_t important_pages;	/* no. of important pages */
+	atomic64_t important_compr_data_size;     /* important compressed size of pages stored */
 	atomic64_t pages_stored;	/* no. of pages currently stored */
 	atomic64_t lowratio_pages;
 #ifdef CONFIG_MIUI_ZRAM_MEMORY_TRACKING
@@ -181,8 +173,6 @@ struct zram {
 	unsigned int old_block_size;
 	unsigned long *bitmap;
 	unsigned long nr_pages;
-	/* for batch writeback */
-	struct page *writeback_pages;
 #endif
 #ifdef CONFIG_ZRAM_MEMORY_TRACKING
 	struct dentry *debugfs_dir;
