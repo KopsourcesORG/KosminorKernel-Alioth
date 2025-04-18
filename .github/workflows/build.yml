@@ -45,7 +45,7 @@ jobs:
 
       - name: Get Kernel source
         run: |
-          git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
+          git clone --recursive https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
           
       - name: Enable SukiSU Ultra
         run: |

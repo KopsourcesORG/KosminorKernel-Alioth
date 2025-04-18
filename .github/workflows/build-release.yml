@@ -45,8 +45,13 @@ jobs:
 
       - name: Get Kernel source
         run: |
-          git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
+          git clone --recursive https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
           rm -rf $GITHUB_WORKSPACE/workdir/source/.git
+          
+      - name: Disable SukiSU Ultra
+        run: |
+          cd $GITHUB_WORKSPACE/workdir/source
+          sed -i -e '$a\'$'\n''CONFIG_KSU=n' arch/arm64/configs/alioth_k-nel_defconfig
           
       - name: Build Kernel
         run: |
@@ -123,7 +128,7 @@ jobs:
 
       - name: Get Kernel source
         run: |
-          git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
+          git clone --recursive https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
           rm -rf $GITHUB_WORKSPACE/workdir/source/.git
           
       - name: Enable SukiSU Ultra
