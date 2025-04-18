@@ -48,6 +48,11 @@ jobs:
           git clone --recursive https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
           rm -rf $GITHUB_WORKSPACE/workdir/source/.git
           
+      - name: Enable LXC Docker Support
+        run: |
+          cd  $GITHUB_WORKSPACE/workdir/source
+          sed -i -e '$a\'$'\n''CONFIG_DOCKER=y\nCONFIG_DOCKER_DEVICE_MAPPER=y\nCONFIG_DOCKER_OVERLAY_FS=y' arch/arm64/configs/alioth_k-nel_defconfig
+          
       - name: Disable SukiSU Ultra
         run: |
           cd $GITHUB_WORKSPACE/workdir/source
@@ -130,6 +135,11 @@ jobs:
         run: |
           git clone --recursive https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
           rm -rf $GITHUB_WORKSPACE/workdir/source/.git
+          
+      - name: Enable LXC Docker Support
+        run: |
+          cd  $GITHUB_WORKSPACE/workdir/source
+          sed -i -e '$a\'$'\n''CONFIG_DOCKER=y\nCONFIG_DOCKER_DEVICE_MAPPER=y\nCONFIG_DOCKER_OVERLAY_FS=y' arch/arm64/configs/alioth_k-nel_defconfig
           
       - name: Enable SukiSU Ultra
         run: |
