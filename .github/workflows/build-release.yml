@@ -155,9 +155,9 @@ jobs:
 
       - name: Patch SukiSU Ultra KPM
         run: |
-          cd $GITHUB_WORKSPACE/workdir/
-          git clone https://${{ secrets.TOKEN }}@github.com/KJ-Network/SukiSU-Ultra-KPM-Patcher.git --depth 1
-          cd SukiSU-Ultra-KPM-Patcher
+          mkdir $GITHUB_WORKSPACE/workdir/SukiSU-Patch
+          cd $GITHUB_WORKSPACE/workdir/SukiSU-Patch
+          wget https://github.com/ShirkNeko/SukiSU_KernelPatch_patch/releases/download/0.11-beta/patch_linux
           cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image .
           cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dts/vendor/qcom/*.dtb .
           chmod +x patch_linux
@@ -168,7 +168,7 @@ jobs:
 
       - name: Pack Kernel
         run: |
-          cp $GITHUB_WORKSPACE/workdir/SukiSU-Ultra-KPM-Patcher/Image.gz-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer/
+          cp $GITHUB_WORKSPACE/workdir/SukiSU-Patch/Image.gz-dtb $GITHUB_WORKSPACE/workdir/source/android/Packer/
           sed -i '/description/ s/$/ Just installed K-Nel Alioth version: ${{ steps.get-tag.outputs.TAG_NAME }} (With SukiSU Ultra, KPM, SUSFS)/'  $GITHUB_WORKSPACE/workdir/source/android/Packer/module.prop
           
       - name: Upload Kernel Package
