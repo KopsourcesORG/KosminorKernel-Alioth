@@ -45,18 +45,15 @@ jobs:
 
       - name: Get Kernel source
         run: |
-          git clone --recursive https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
+          git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
+          cd $GITHUB_WORKSPACE/workdir/source
           rm -rf $GITHUB_WORKSPACE/workdir/source/.git
           
-      - name: Enable LXC Docker Support
-        run: |
-          cd  $GITHUB_WORKSPACE/workdir/source
-          sed -i -e '$a\'$'\n''CONFIG_DOCKER=y\nCONFIG_DOCKER_DEVICE_MAPPER=y\nCONFIG_DOCKER_OVERLAY_FS=y' arch/arm64/configs/alioth_k-nel_defconfig
-          
-      - name: Disable SukiSU Ultra
+      - name: Processing submodules
         run: |
           cd $GITHUB_WORKSPACE/workdir/source
-          sed -i -e '$a\'$'\n''CONFIG_KSU=n' arch/arm64/configs/alioth_k-nel_defconfig
+          git submodule update --init --recursive utils/lxc-docker
+          sed -i -e '$a\'$'\n''CONFIG_DOCKER=y\nCONFIG_DOCKER_DEVICE_MAPPER=y\nCONFIG_DOCKER_OVERLAY_FS=y' arch/arm64/configs/alioth_k-nel_defconfig
           
       - name: Build Kernel
         run: |
@@ -133,17 +130,15 @@ jobs:
 
       - name: Get Kernel source
         run: |
-          git clone --recursive https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
+          git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
           rm -rf $GITHUB_WORKSPACE/workdir/source/.git
           
-      - name: Enable LXC Docker Support
-        run: |
-          cd  $GITHUB_WORKSPACE/workdir/source
-          sed -i -e '$a\'$'\n''CONFIG_DOCKER=y\nCONFIG_DOCKER_DEVICE_MAPPER=y\nCONFIG_DOCKER_OVERLAY_FS=y' arch/arm64/configs/alioth_k-nel_defconfig
-          
-      - name: Enable SukiSU Ultra
+      - name: Processing submodules
         run: |
           cd $GITHUB_WORKSPACE/workdir/source
+          git submodule update --init --recursive KernelSU
+          git submodule update --init --recursive utils/lxc-docker
+          sed -i -e '$a\'$'\n''CONFIG_DOCKER=y\nCONFIG_DOCKER_DEVICE_MAPPER=y\nCONFIG_DOCKER_OVERLAY_FS=y' arch/arm64/configs/alioth_k-nel_defconfig
           sed -i -e '$a\'$'\n''CONFIG_KSU=y\nCONFIG_KSU_MANUAL_HOOK=y\nCONFIG_KPM=y\nCONFIG_KSU_SUSFS=y\nCONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y\nCONFIG_KSU_SUSFS_SUS_PATH=y\nCONFIG_KSU_SUSFS_SUS_MOUNT=y\nCONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y\nCONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y\nCONFIG_KSU_SUSFS_SUS_KSTAT=y\nCONFIG_KSU_SUSFS_TRY_UMOUNT=y\nCONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y\nCONFIG_KSU_SUSFS_SPOOF_UNAME=y\nCONFIG_KSU_SUSFS_ENABLE_LOG=y\nCONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y\nCONFIG_KSU_SUSFS_OPEN_REDIRECT=y' arch/arm64/configs/alioth_k-nel_defconfig
           
       - name: Build Kernel
