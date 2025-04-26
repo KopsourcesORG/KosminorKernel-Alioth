@@ -140,5 +140,10 @@ kernel/configs/android-*.cfg
 #
 Android.bp
 
+# patches
+*.patch
+*.rej
+*.orig
+
 # backups
 *.bak
