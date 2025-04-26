@@ -166,7 +166,7 @@ jobs:
         run: |
           mkdir $GITHUB_WORKSPACE/workdir/SukiSU-Patch
           cd $GITHUB_WORKSPACE/workdir/SukiSU-Patch
-          wget https://github.com/ShirkNeko/SukiSU_KernelPatch_patch/releases/download/0.11-beta/patch_linux
+          wget https://raw.githubusercontent.com/ShirkNeko/SukiSU_patch/refs/heads/main/kpm/patch_linux
           cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/Image .
           cp $GITHUB_WORKSPACE/workdir/source/out/arch/arm64/boot/dts/vendor/qcom/*.dtb .
           chmod +x patch_linux
