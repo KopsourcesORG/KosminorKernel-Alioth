@@ -61,7 +61,7 @@ static struct list_head *zstd_alloc_workspace(void)
 		return ERR_PTR(-ENOMEM);
 
 	workspace->size = max_t(size_t,
-			zstd_cstream_workspace_bound(params.cParams),
+			zstd_cstream_workspace_bound(&params.cParams),
 			zstd_dstream_workspace_bound(ZSTD_BTRFS_MAX_INPUT));
 	workspace->mem = kvmalloc(workspace->size, GFP_KERNEL);
 	workspace->buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
