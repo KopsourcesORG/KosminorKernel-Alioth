@@ -51,6 +51,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/workdir/source
           git submodule update --init KernelSU
+          sed -i -e '$a\'$'\n''CONFIG_KSU=n' arch/arm64/configs/alioth_k-nel_defconfig
           
       - name: Build Kernel
         run: |
