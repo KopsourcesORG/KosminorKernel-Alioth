@@ -46,8 +46,6 @@ jobs:
       - name: Get Kernel source
         run: |
           git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
-          cd $GITHUB_WORKSPACE/workdir/source
-          rm -rf $GITHUB_WORKSPACE/workdir/source/.git
           
       - name: Processing submodules
         run: |
@@ -130,7 +128,6 @@ jobs:
       - name: Get Kernel source
         run: |
           git clone https://github.com/$GITHUB_REPOSITORY/ --depth 1 -b ${{ steps.get-tag.outputs.TAG_NAME }} $GITHUB_WORKSPACE/workdir/source
-          rm -rf $GITHUB_WORKSPACE/workdir/source/.git
           
       - name: Processing submodules
         run: |
