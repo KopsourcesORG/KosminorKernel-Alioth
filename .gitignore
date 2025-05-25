@@ -139,8 +139,8 @@ out/
 
 # patches
 *.patch
-*.rej
 *.orig
+*.rej
 
-# backup
+# backups
 *.bak
