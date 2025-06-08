@@ -37,6 +37,7 @@ struct fscrypt_name {
 	u32 minor_hash;
 	struct fscrypt_str crypto_buf;
 	bool is_nokey_name;
+	bool is_ciphertext_name;
 };
 
 #define FSTR_INIT(n, l)		{ .name = n, .len = l }
