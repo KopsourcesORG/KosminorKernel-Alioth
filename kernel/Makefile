@@ -129,63 +129,8 @@ $(obj)/configs.o: $(obj)/config_data.h
 
 targets += config_data.gz
 
-ifeq ($(CONFIG_XIAOMI_MIUI),y)
-# Build for MIUI
-ifeq ($(CONFIG_MACH_XIAOMI_ALIOTH),y)
-$(obj)/config_data.gz: arch/arm64/configs/alioth_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_APOLLO),y)
-$(obj)/config_data.gz: arch/arm64/configs/apollo_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_CAS),y)
-$(obj)/config_data.gz: arch/arm64/configs/cas_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_CMI),y)
-$(obj)/config_data.gz: arch/arm64/configs/cmi_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_ELISH),y)
-$(obj)/config_data.gz: arch/arm64/configs/elish_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_ENUMA),y)
-$(obj)/config_data.gz: arch/arm64/configs/enuma_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_LMI),y)
-$(obj)/config_data.gz: arch/arm64/configs/lmi_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_MUNCH),y)
-$(obj)/config_data.gz: arch/arm64/configs/munch_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_PSYCHE),y)
-$(obj)/config_data.gz: arch/arm64/configs/psyche_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_THYME),y)
-$(obj)/config_data.gz: arch/arm64/configs/thyme_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_UMI),y)
-$(obj)/config_data.gz: arch/arm64/configs/umi_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_PIPA),y)
-$(obj)/config_data.gz: arch/arm64/configs/pipa_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_DAGU),y)
-$(obj)/config_data.gz: arch/arm64/configs/dagu_stock-defconfig FORCE
-else
 $(obj)/config_data.gz: $(KCONFIG_CONFIG) FORCE
-endif
-else
 
-# Build for AOSP
-
-ifeq ($(CONFIG_MACH_XIAOMI_ALIOTH),y)
-$(obj)/config_data.gz: arch/arm64/configs/AOSP_defconfig/alioth_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_APOLLO),y)
-$(obj)/config_data.gz: arch/arm64/configs/AOSP_defconfig/apollo_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_CMI),y)
-$(obj)/config_data.gz: arch/arm64/configs/AOSP_defconfig/cmi_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_LMI),y)
-$(obj)/config_data.gz: arch/arm64/configs/AOSP_defconfig/lmi_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_MUNCH),y)
-$(obj)/config_data.gz: arch/arm64/configs/AOSP_defconfig/munch_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_PSYCHE),y)
-$(obj)/config_data.gz: arch/arm64/configs/AOSP_defconfig/psyche_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_UMI),y)
-$(obj)/config_data.gz: arch/arm64/configs/AOSP_defconfig/umi_stock-defconfig FORCE
-else ifeq ($(CONFIG_MACH_XIAOMI_PIPA),y)
-$(obj)/config_data.gz: arch/arm64/configs/AOSP_defconfig/pipa_stock-defconfig FORCE
-else
-$(obj)/config_data.gz: $(KCONFIG_CONFIG) FORCE
-endif
-
-
-endif
 	$(call if_changed,gzip)
 
       filechk_ikconfiggz = (echo "static const char kernel_config_data[] __used = MAGIC_START"; cat $< | scripts/bin2c; echo "MAGIC_END;")
