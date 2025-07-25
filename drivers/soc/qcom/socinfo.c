@@ -91,19 +91,7 @@ const char *hw_platform[] = {
 	[HW_PLATFORM_DTV] = "DTV",
 	[HW_PLATFORM_STP] = "STP",
 	[HW_PLATFORM_SBC] = "SBC",
-	[HW_PLATFORM_J2] = "UMI",
-	[HW_PLATFORM_J1] = "CMI",
-	[HW_PLATFORM_J11] = "LMI",
-	[HW_PLATFORM_J1S] = "CAS",
-	[HW_PLATFORM_J3S] = "APOLLO",
 	[HW_PLATFORM_K11A] = "ALIOTH",
-	[HW_PLATFORM_J2S] = "THYME",
-	[HW_PLATFORM_K81] = "ENUMA",
-	[HW_PLATFORM_K81A] = "ELISH",
-	[HW_PLATFORM_L3A] = "PSYCHE",
-	[HW_PLATFORM_L11R] = "MUNCH",
-	[HW_PLATFORM_L81A] = "DAGU",
-    [HW_PLATFORM_M82] = "PIPA",
 	[HW_PLATFORM_HDK] = "HDK",
 	[HW_PLATFORM_IDP] = "IDP"
 };
@@ -2105,32 +2093,8 @@ uint32_t get_hw_version_platform(void)
 {
 	uint32_t hw_type = socinfo_get_platform_type();
 
-	if (hw_type == HW_PLATFORM_J2)
-		return HARDWARE_PLATFORM_UMI;
-	if (hw_type == HW_PLATFORM_J1)
-		return HARDWARE_PLATFORM_CMI;
-	if (hw_type == HW_PLATFORM_J11)
-		return HARDWARE_PLATFORM_LMI;
-	if (hw_type == HW_PLATFORM_J1S)
-		return HARDWARE_PLATFORM_CAS;
-	if (hw_type == HW_PLATFORM_J3S)
-		return HARDWARE_PLATFORM_APOLLO;
 	if (hw_type == HW_PLATFORM_K11A)
 		return HARDWARE_PLATFORM_ALIOTH;
-	if (hw_type == HW_PLATFORM_K81)
-		return HARDWARE_PLATFORM_ENUMA;
-	if (hw_type == HW_PLATFORM_K81A)
-		return HARDWARE_PLATFORM_ELISH;
-	if (hw_type == HW_PLATFORM_J2S)
-		return HARDWARE_PLATFORM_THYME;
-	if (hw_type == HW_PLATFORM_L3A)
-		return HARDWARE_PLATFORM_PSYCHE;
-	if (hw_type == HW_PLATFORM_L11R)
-		return HARDWARE_PLATFORM_MUNCH;
-	if (hw_type == HW_PLATFORM_L81A)
-		return HARDWARE_PLATFORM_DAGU;
-	if (hw_type == HW_PLATFORM_M82)
-		return HARDWARE_PLATFORM_PIPA;
 	else
 		return HARDWARE_PLATFORM_UNKNOWN;
 }

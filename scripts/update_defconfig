@@ -33,8 +33,7 @@ declare -r krnl_defconfig_head=$(git -C "${krnl_config_dir}" rev-parse HEAD)
 declare -r soc="kona"
 
 declare -A devices=(
-	[alioth]=1 [apollo]=1 [cas]=1 [cmi]=1 [dagu]=1 [elish]=1
-	[enuma]=1 [lmi]=1 [munch]=1 [umi]=1 [thyme]=1 [pipa]=1 [psyche]=1
+	[alioth]=1
 )
 
 print_environment() {

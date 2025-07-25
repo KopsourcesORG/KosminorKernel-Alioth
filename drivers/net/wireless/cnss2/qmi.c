@@ -582,59 +582,14 @@ static int cnss_get_bdf_file_name(struct cnss_plat_data *plat_priv,
 	switch (bdf_type) {
 	case CNSS_BDF_ELF:
 		if (plat_priv->board_info.board_id == 0xFF) {
-			if (hw_platform_ver == HARDWARE_PLATFORM_LMI) {
-				if (get_hw_country_version() == (uint32_t)CountryGlobal)
-				    snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_J11_GLOBAL);
-				else if (get_hw_country_version() == (uint32_t)CountryIndia)
-				    snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_J11_INDIA);
-				else {
-					if ((get_hw_version_minor() == (uint32_t)HW_MINOR_VERSION_B) && (get_hw_version_major() == (uint32_t)HW_MAJOR_VERSION_B))
-						snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_J11_B_BOM);
-					else
-						snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_J11);
-				}
-			} else if (hw_platform_ver == HARDWARE_PLATFORM_CAS) {
-				snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_J1S);
-			} else if (hw_platform_ver == HARDWARE_PLATFORM_THYME) {
-				snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_J2S);
-			} else if (hw_platform_ver == HARDWARE_PLATFORM_APOLLO) {
-				if (get_hw_country_version() == (uint32_t)CountryGlobal)
-				    snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_J3S_GLOBAL);
-				else if (get_hw_country_version() == (uint32_t)CountryIndia)
-				    snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_J3S_INDIA);
-				else
-				    snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_J3S);
-			} else if (hw_platform_ver == HARDWARE_PLATFORM_ALIOTH) {
+			if (hw_platform_ver == HARDWARE_PLATFORM_ALIOTH) {
 				if (get_hw_country_version() == (uint32_t)CountryGlobal)
 				    snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_K11A_GLOBAL);
 				else if (get_hw_country_version() == (uint32_t)CountryIndia)
 				    snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_K11A_INDIA);
 				else
 				    snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_K11A);
-			} else if (hw_platform_ver == HARDWARE_PLATFORM_ENUMA) {
-				snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_K81);
-			} else if (hw_platform_ver == HARDWARE_PLATFORM_ELISH) {
-				snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_K81A);
-			} else if (hw_platform_ver == HARDWARE_PLATFORM_PSYCHE) {
-				if (hw_country_ver == (uint32_t)CountryGlobal)
-					snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_L3A_GLOBAL);
-				else
-					snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_L3A);
-			} else if (hw_platform_ver == HARDWARE_PLATFORM_MUNCH) {
-				if (hw_country_ver == (uint32_t)CountryGlobal)
-					snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_L11R_GLOBAL);
-				else
-					snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_L11R);
-			} else if (hw_platform_ver == HARDWARE_PLATFORM_DAGU) {
-				snprintf(filename_tmp,filename_len,ELF_BDF_FILE_NAME_L81A);
-			} else if (hw_platform_ver == HARDWARE_PLATFORM_PIPA) {
-				if (get_hw_country_version() == (uint32_t)CountryGlobal)
-					snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_M82_GLOBAL);
-				else if (get_hw_country_version() == (uint32_t)CountryIndia)
-					snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_M82_INDIA);
-				else
-					snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_M82);
-			}else {
+			} else {
 				if (hw_country_ver == (uint32_t)CountryGlobal)
 					snprintf(filename_tmp, filename_len, ELF_BDF_FILE_NAME_GLOBAL);
 				else if (hw_country_ver == (uint32_t)CountryIndia)
@@ -683,9 +638,6 @@ static int cnss_get_bdf_file_name(struct cnss_plat_data *plat_priv,
 		}
 		break;
 	case CNSS_BDF_REGDB:
-		if (hw_platform_ver == HARDWARE_PLATFORM_LMI)
-			snprintf(filename_tmp, filename_len, REGDB_FILE_NAME_J11);
-		else
 			snprintf(filename_tmp, filename_len, REGDB_FILE_NAME);
 		break;
 	case CNSS_BDF_DUMMY:

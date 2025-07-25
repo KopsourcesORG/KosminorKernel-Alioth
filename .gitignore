@@ -136,3 +136,11 @@ all.config
 kernel/configs/android-*.cfg
 
 out/
+
+# patches
+*.patch
+*.rej
+*.orig
+
+# backup
+*.bak
