@@ -9,25 +9,19 @@
 #include "socket.h"
 #include "queueing.h"
 #include "messages.h"
-
-#include <uapi/linux/wireguard.h>
-
+#include "uapi/wireguard.h"
 #include <linux/if.h>
 #include <net/genetlink.h>
 #include <net/sock.h>
 #include <crypto/algapi.h>
-
-struct __uapi_kernel_timespec {
-	int64_t tv_sec, tv_nsec;
-};
 
 static struct genl_family genl_family;
 
 static const struct nla_policy device_policy[WGDEVICE_A_MAX + 1] = {
 	[WGDEVICE_A_IFINDEX]		= { .type = NLA_U32 },
 	[WGDEVICE_A_IFNAME]		= { .type = NLA_NUL_STRING, .len = IFNAMSIZ - 1 },
-	[WGDEVICE_A_PRIVATE_KEY]	= { .len = NOISE_PUBLIC_KEY_LEN },
-	[WGDEVICE_A_PUBLIC_KEY]		= { .len = NOISE_PUBLIC_KEY_LEN },
+	[WGDEVICE_A_PRIVATE_KEY]	= NLA_POLICY_EXACT_LEN(NOISE_PUBLIC_KEY_LEN),
+	[WGDEVICE_A_PUBLIC_KEY]		= NLA_POLICY_EXACT_LEN(NOISE_PUBLIC_KEY_LEN),
 	[WGDEVICE_A_FLAGS]		= { .type = NLA_U32 },
 	[WGDEVICE_A_LISTEN_PORT]	= { .type = NLA_U16 },
 	[WGDEVICE_A_FWMARK]		= { .type = NLA_U32 },
@@ -35,12 +29,12 @@ static const struct nla_policy device_policy[WGDEVICE_A_MAX + 1] = {
 };
 
 static const struct nla_policy peer_policy[WGPEER_A_MAX + 1] = {
-	[WGPEER_A_PUBLIC_KEY]				= { .len = NOISE_PUBLIC_KEY_LEN },
-	[WGPEER_A_PRESHARED_KEY]			= { .len = NOISE_SYMMETRIC_KEY_LEN },
+	[WGPEER_A_PUBLIC_KEY]				= NLA_POLICY_EXACT_LEN(NOISE_PUBLIC_KEY_LEN),
+	[WGPEER_A_PRESHARED_KEY]			= NLA_POLICY_EXACT_LEN(NOISE_SYMMETRIC_KEY_LEN),
 	[WGPEER_A_FLAGS]				= { .type = NLA_U32 },
-	[WGPEER_A_ENDPOINT]				= { .len = sizeof(struct sockaddr) },
+	[WGPEER_A_ENDPOINT]				= NLA_POLICY_MIN_LEN(sizeof(struct sockaddr)),
 	[WGPEER_A_PERSISTENT_KEEPALIVE_INTERVAL]	= { .type = NLA_U16 },
-	[WGPEER_A_LAST_HANDSHAKE_TIME]			= { .len = sizeof(struct __uapi_kernel_timespec) },
+	[WGPEER_A_LAST_HANDSHAKE_TIME]			= NLA_POLICY_EXACT_LEN(sizeof(struct __kernel_timespec)),
 	[WGPEER_A_RX_BYTES]				= { .type = NLA_U64 },
 	[WGPEER_A_TX_BYTES]				= { .type = NLA_U64 },
 	[WGPEER_A_ALLOWEDIPS]				= { .type = NLA_NESTED },
@@ -49,7 +43,7 @@ static const struct nla_policy peer_policy[WGPEER_A_MAX + 1] = {
 
 static const struct nla_policy allowedip_policy[WGALLOWEDIP_A_MAX + 1] = {
 	[WGALLOWEDIP_A_FAMILY]		= { .type = NLA_U16 },
-	[WGALLOWEDIP_A_IPADDR]		= { .len = sizeof(struct in_addr) },
+	[WGALLOWEDIP_A_IPADDR]		= NLA_POLICY_MIN_LEN(sizeof(struct in_addr)),
 	[WGALLOWEDIP_A_CIDR_MASK]	= { .type = NLA_U8 }
 };
 
@@ -125,7 +119,7 @@ get_peer(struct wg_peer *peer, struct sk_buff *skb, struct dump_ctx *ctx)
 		goto err;
 
 	if (!allowedips_node) {
-		const struct __uapi_kernel_timespec last_handshake = {
+		const struct __kernel_timespec last_handshake = {
 			.tv_sec = peer->walltime_last_handshake.tv_sec,
 			.tv_nsec = peer->walltime_last_handshake.tv_nsec
 		};
@@ -202,15 +196,9 @@ err:
 
 static int wg_get_device_start(struct netlink_callback *cb)
 {
-	struct nlattr **attrs = genl_family_attrbuf(&genl_family);
 	struct wg_device *wg;
-	int ret;
 
-	ret = nlmsg_parse(cb->nlh, GENL_HDRLEN + genl_family.hdrsize, attrs,
-			  genl_family.maxattr, device_policy, NULL);
-	if (ret < 0)
-		return ret;
-	wg = lookup_interface(attrs, cb->skb);
+	wg = lookup_interface(genl_dumpit_info(cb)->attrs, cb->skb);
 	if (IS_ERR(wg))
 		return PTR_ERR(wg);
 	DUMP_CTX(cb)->wg = wg;
@@ -446,13 +434,14 @@ static int set_peer(struct wg_device *wg, struct nlattr **attrs)
 	if (attrs[WGPEER_A_ENDPOINT]) {
 		struct sockaddr *addr = nla_data(attrs[WGPEER_A_ENDPOINT]);
 		size_t len = nla_len(attrs[WGPEER_A_ENDPOINT]);
-		struct endpoint endpoint = { { { 0 } } };
 
-		if (len == sizeof(struct sockaddr_in) && addr->sa_family == AF_INET) {
-			endpoint.addr4 = *(struct sockaddr_in *)addr;
-			wg_socket_set_peer_endpoint(peer, &endpoint);
-		} else if (len == sizeof(struct sockaddr_in6) && addr->sa_family == AF_INET6) {
-			endpoint.addr6 = *(struct sockaddr_in6 *)addr;
+		if ((len == sizeof(struct sockaddr_in) &&
+		     addr->sa_family == AF_INET) ||
+		    (len == sizeof(struct sockaddr_in6) &&
+		     addr->sa_family == AF_INET6)) {
+			struct endpoint endpoint = { { { 0 } } };
+
+			memcpy(&endpoint.addr, addr, len);
 			wg_socket_set_peer_endpoint(peer, &endpoint);
 		}
 	}
@@ -556,7 +545,6 @@ static int wg_set_device(struct sk_buff *skb, struct genl_info *info)
 		u8 *private_key = nla_data(info->attrs[WGDEVICE_A_PRIVATE_KEY]);
 		u8 public_key[NOISE_PUBLIC_KEY_LEN];
 		struct wg_peer *peer, *temp;
-		bool send_staged_packets;
 
 		if (!crypto_memneq(wg->static_identity.static_private,
 				   private_key, NOISE_PUBLIC_KEY_LEN))
@@ -575,17 +563,14 @@ static int wg_set_device(struct sk_buff *skb, struct genl_info *info)
 		}
 
 		down_write(&wg->static_identity.lock);
-		send_staged_packets = !wg->static_identity.has_identity && netif_running(wg->dev);
-		wg_noise_set_static_identity_private_key(&wg->static_identity, private_key);
-		send_staged_packets = send_staged_packets && wg->static_identity.has_identity;
-
-		wg_cookie_checker_precompute_device_keys(&wg->cookie_checker);
-		list_for_each_entry_safe(peer, temp, &wg->peer_list, peer_list) {
+		wg_noise_set_static_identity_private_key(&wg->static_identity,
+							 private_key);
+		list_for_each_entry_safe(peer, temp, &wg->peer_list,
+					 peer_list) {
 			wg_noise_precompute_static_static(peer);
 			wg_noise_expire_current_peer_keypairs(peer);
-			if (send_staged_packets)
-				wg_packet_send_staged_packets(peer);
 		}
+		wg_cookie_checker_precompute_device_keys(&wg->cookie_checker);
 		up_write(&wg->static_identity.lock);
 	}
 skip_set_private_key:
@@ -617,29 +602,48 @@ out_nodev:
 	return ret;
 }
 
-static const struct genl_ops genl_ops[] = {
+#ifndef COMPAT_CANNOT_USE_CONST_GENL_OPS
+static const
+#else
+static
+#endif
+struct genl_ops genl_ops[] = {
 	{
 		.cmd = WG_CMD_GET_DEVICE,
+#ifndef COMPAT_CANNOT_USE_NETLINK_START
 		.start = wg_get_device_start,
+#endif
 		.dumpit = wg_get_device_dump,
 		.done = wg_get_device_done,
-		.flags = GENL_UNS_ADMIN_PERM,
-		.policy = device_policy
+#ifdef COMPAT_CANNOT_INDIVIDUAL_NETLINK_OPS_POLICY
+		.policy = device_policy,
+#endif
+		.flags = GENL_UNS_ADMIN_PERM
 	}, {
 		.cmd = WG_CMD_SET_DEVICE,
 		.doit = wg_set_device,
-		.flags = GENL_UNS_ADMIN_PERM,
-		.policy = device_policy
+#ifdef COMPAT_CANNOT_INDIVIDUAL_NETLINK_OPS_POLICY
+		.policy = device_policy,
+#endif
+		.flags = GENL_UNS_ADMIN_PERM
 	}
 };
 
-static struct genl_family genl_family __ro_after_init = {
+static struct genl_family genl_family
+#ifndef COMPAT_CANNOT_USE_GENL_NOPS
+__ro_after_init = {
 	.ops = genl_ops,
 	.n_ops = ARRAY_SIZE(genl_ops),
+#else
+= {
+#endif
 	.name = WG_GENL_NAME,
 	.version = WG_GENL_VERSION,
 	.maxattr = WGDEVICE_A_MAX,
 	.module = THIS_MODULE,
+#ifndef COMPAT_CANNOT_INDIVIDUAL_NETLINK_OPS_POLICY
+	.policy = device_policy,
+#endif
 	.netnsok = true
 };
 
