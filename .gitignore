@@ -134,3 +134,9 @@ all.config
 
 # fetched Android config fragments
 kernel/configs/android-*.cfg
+
+# Compile script
+compile.sh
+
+# out directory
+out/
