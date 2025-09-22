@@ -1,0 +1,40 @@
+From b7093ceb70b0b566ef7d3ad30b9856f8c349337f Mon Sep 17 00:00:00 2001
+From: EmanuelCN <emanuelghub@gmail.com>
+Date: Sun, 24 Sep 2023 23:51:05 +0300
+Subject: [PATCH] arm64: dts: Correct physical dimension for miui
+
+---
+ .../dts/vendor/qcom/dsi-panel-j3s-37-02-0a-dsc-video.dtsi     | 4 ++--
+ .../boot/dts/vendor/qcom/dsi-panel-k11a-38-08-0a-dsc-cmd.dtsi | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/vendor/qcom/dsi-panel-j3s-37-02-0a-dsc-video.dtsi b/arch/arm64/boot/dts/vendor/qcom/dsi-panel-j3s-37-02-0a-dsc-video.dtsi
+index 7224b1fd2db2..a00c8754271f 100644
+--- a/arch/arm64/boot/dts/vendor/qcom/dsi-panel-j3s-37-02-0a-dsc-video.dtsi
++++ b/arch/arm64/boot/dts/vendor/qcom/dsi-panel-j3s-37-02-0a-dsc-video.dtsi
+@@ -42,8 +42,8 @@
+ 		qcom,mdss-dsi-dma-trigger = "trigger_sw";
+ 		qcom,mdss-dsi-mdp-trigger = "none";
+ 		qcom,mdss-dsi-reset-sequence = <1 2>, <0 10>, <1 5>, <0 1>, <1 10>;
+-		qcom,mdss-pan-physical-width-dimension = <70>;
+-		qcom,mdss-pan-physical-height-dimension = <155>;
++		qcom,mdss-pan-physical-width-dimension = <700>;
++		qcom,mdss-pan-physical-height-dimension = <1540>;
+ 		qcom,mdss-dsi-tx-eot-append;
+ 		qcom,bl-update-flag = "delay_until_first_frame";
+ 		qcom,disp-panel-offon-mode-enabled;
+diff --git a/arch/arm64/boot/dts/vendor/qcom/dsi-panel-k11a-38-08-0a-dsc-cmd.dtsi b/arch/arm64/boot/dts/vendor/qcom/dsi-panel-k11a-38-08-0a-dsc-cmd.dtsi
+index 58722bd57095..22a10d70cf33 100644
+--- a/arch/arm64/boot/dts/vendor/qcom/dsi-panel-k11a-38-08-0a-dsc-cmd.dtsi
++++ b/arch/arm64/boot/dts/vendor/qcom/dsi-panel-k11a-38-08-0a-dsc-cmd.dtsi
+@@ -24,8 +24,8 @@
+ 		qcom,mdss-dsi-mdp-trigger = "none";
+ 		qcom,mdss-dsi-reset-sequence = <0 12>, <1 10>;
+ 		qcom,mdss-dsi-reset-powerdown-delay = <10>;
+-		qcom,mdss-pan-physical-width-dimension = <70>;
+-		qcom,mdss-pan-physical-height-dimension = <155>;
++		qcom,mdss-pan-physical-width-dimension = <700>;
++		qcom,mdss-pan-physical-height-dimension = <1540>;
+ 		qcom,mdss-dsi-te-pin-select = <1>;
+ 		qcom,mdss-dsi-wr-mem-start = <0x2c>;
+ 		qcom,mdss-dsi-wr-mem-continue = <0x3c>;
