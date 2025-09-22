@@ -1,0 +1,33 @@
+From 5f26367ba51779b31682592b2a6162504926c478 Mon Sep 17 00:00:00 2001
+From: EmanuelCN <emanuelghub@gmail.com>
+Date: Thu, 23 Jan 2025 20:24:49 +0200
+Subject: [PATCH] arm64: dts: Load apollo battery profile in alioth's pmic
+
+Change-Id: Ib09c49dac508cf16b98fbccbc648d984e6a26dc8
+---
+ arch/arm64/boot/dts/vendor/qcom/alioth-sm8250.dtsi | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/vendor/qcom/alioth-sm8250.dtsi b/arch/arm64/boot/dts/vendor/qcom/alioth-sm8250.dtsi
+index 8f203c9c4aad..0291d4176a74 100755
+--- a/arch/arm64/boot/dts/vendor/qcom/alioth-sm8250.dtsi
++++ b/arch/arm64/boot/dts/vendor/qcom/alioth-sm8250.dtsi
+@@ -614,6 +614,7 @@ And public attribution of xiaomi platforms(like alioth and so and)
+ 	qcom,soc-hi-res;
+ 	qcom,sun-profile-only;
+ 	qcom,k11a-batt-profile;
++        qcom,j3s-batt-profile;
+ 	qcom,soc_decimal_rate = <
+ 		0  38
+ 		10 35
+@@ -682,6 +683,7 @@ And public attribution of xiaomi platforms(like alioth and so and)
+ 		qcom,batt-id-range-pct = <15>;
+ 		#include "fg-gen4-batterydata-alioth-FMT-4520mah.dtsi"
+ 		#include "fg-gen4-batterydata-alioth-GY-4520mah.dtsi"
++		#include "fg-gen4-batterydata-apollo-sun-5000mah.dtsi"
+ 	};
+ 
+ 	onewire_gpio: onewire_gpio {
+-- 
+2.48.1
+
