@@ -12,9 +12,9 @@ jobs:
 
       - name: Get AOSP Clang
         run: |
-          wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r547379.tar.gz
+          wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/mirror-goog-main-llvm-toolchain-source/clang-r574158.tar.gz
           mkdir aosp-clang
-          tar -xzf clang-r547379.tar.gz -C aosp-clang
+          tar -xzf clang-r574158.tar.gz -C aosp-clang
 
       - name: Compile kernel
         run: ./scripts/RvCompiler/compile.sh DEFCONFIG=vendor/xiaomi/alioth_defconfig CLANG_DIR=$PWD/aosp-clang KBUILD_BUILD_USER=Rve KBUILD_BUILD_HOST=RvEnterprises
