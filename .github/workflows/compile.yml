@@ -19,7 +19,7 @@ jobs:
       - name: Compile kernel
         run: ./scripts/RvCompiler/compile.sh DEFCONFIG=vendor/xiaomi/alioth_defconfig CLANG_DIR=$PWD/aosp-clang KBUILD_BUILD_USER=Rve KBUILD_BUILD_HOST=RvEnterprises
 
-      - name: Upload artifact
+      - name: Upload Image & DTBO
         uses: actions/upload-artifact@v4
         with:
           name: RvKernel-Alioth
@@ -27,3 +27,9 @@ jobs:
             out/arch/arm64/boot/Image
             out/arch/arm64/boot/dtb.img
             out/arch/arm64/boot/dtbo.img
+
+      - name: Upload log
+        uses: actions/upload-artifact@v4
+        with:
+          name: compile-log
+          path: out/compile.log
