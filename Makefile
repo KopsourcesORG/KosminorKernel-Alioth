@@ -698,8 +698,12 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, address-of-packed-member)
 
 ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
 KBUILD_CFLAGS   += -Os
+KBUILD_AFLAGS   += -Os
+KBUILD_LDFLAGS  += -Os
 else
-KBUILD_CFLAGS   += -O3
+KBUILD_CFLAGS   += -O3 -march=armv8.2-a+crypto+fp16 -fno-trapping-math -fno-math-errno -mllvm -polly
+KBUILD_AFLAGS   += -O3 -march=armv8.2-a+crypto+fp16
+KBUILD_LDFLAGS  += -O3,-Bsymbolic-functions,--as-needed -mllvm -polly
 endif
 
 ifdef CONFIG_CC_WERROR
