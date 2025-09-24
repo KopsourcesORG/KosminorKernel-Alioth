@@ -898,8 +898,8 @@ endif
 
 ifdef CONFIG_LTO_CLANG
 ifdef CONFIG_THINLTO
-lto-clang-flags	:= -flto=thin
-KBUILD_LDFLAGS	+= --thinlto-cache-dir=.thinlto-cache
+lto-clang-flags	:= -flto=thin -fsplit-lto-unit
+KBUILD_LDFLAGS	+= --thinlto-cache-dir=.thinlto-cache --thinlto-jobs=$(nproc --all)
 else
 lto-clang-flags	:= -flto
 endif
