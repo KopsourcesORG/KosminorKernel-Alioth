@@ -3,7 +3,7 @@ menu "Android"
 
 config ANDROID
 	bool "Android Drivers"
-	help
+	---help---
 	  Enable support for various drivers needed on the Android platform
 
 if ANDROID
@@ -12,7 +12,7 @@ config ANDROID_BINDER_IPC
 	bool "Android Binder IPC Driver"
 	depends on MMU
 	default n
-	help
+	---help---
 	  Binder is used in Android for both communication between processes,
 	  and remote method invocation.
 
@@ -24,7 +24,7 @@ config ANDROID_BINDERFS
 	bool "Android Binderfs filesystem"
 	depends on ANDROID_BINDER_IPC
 	default n
-	help
+	---help---
 	  Binderfs is a pseudo-filesystem for the Android Binder IPC driver
 	  which can be mounted per-ipc namespace allowing to run multiple
 	  instances of Android.
@@ -36,7 +36,7 @@ config ANDROID_BINDER_DEVICES
 	string "Android Binder devices"
 	depends on ANDROID_BINDER_IPC
 	default "binder,hwbinder,vndbinder"
-	help
+	---help---
 	  Default value for the binder.devices parameter.
 
 	  The binder.devices parameter is a comma-separated list of strings
@@ -47,7 +47,7 @@ config ANDROID_BINDER_DEVICES
 config ANDROID_BINDER_IPC_SELFTEST
 	bool "Android Binder IPC Driver Selftest"
 	depends on ANDROID_BINDER_IPC
-	help
+	---help---
 	  This feature allows binder selftest to run.
 
 	  Binder selftest checks the allocation and free of binder buffers
@@ -63,21 +63,6 @@ config ANDROID_VENDOR_HOOKS
 	  Allow vendor modules to attach to tracepoint "hooks" defined via
 	  DECLARE_HOOK or DECLARE_RESTRICTED_HOOK.
 	  
-config ANDROID_KABI_RESERVE
-	bool "Android KABI reserve padding"
-	default y
-	help
-	  This option enables the padding that the Android GKI kernel adds
-	  to many different kernel structures to support an in-kernel stable ABI
-	  over the lifespan of support for the kernel.
-
-	  Only disable this option if you have a system that needs the Android
-	  kernel drivers, but is NOT an Android GKI kernel image. If disabled
-	  it has the possibility to make the kernel static and runtime image
-	  slightly smaller but will NOT be supported by the Google Android
-	  kernel team.
-
-	  If even slightly unsure, say Y.
 
 endif # if ANDROID
 
