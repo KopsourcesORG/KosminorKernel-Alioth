@@ -2,7 +2,7 @@
 # Automatically generated file; DO NOT EDIT.
 # Linux/arm64 4.19.325 Kernel Configuration
 #
-CONFIG_CC_VERSION_TEXT="Android (14054843, +pgo, +bolt, +lto, +mlgo, based on r574158) clang version 21.0.0 (https://android.googlesource.com/toolchain/llvm-project 9f872551d3c681d06fd303b36f16ed5c274735eb)"
+CONFIG_CC_VERSION_TEXT="Android (14475230, +pgo, +bolt, +lto, +mlgo, based on r574158) clang version 21.0.0 (https://android.googlesource.com/toolchain/llvm-project 9f872551d3c681d06fd303b36f16ed5c274735eb)"
 CONFIG_GCC_VERSION=0
 CONFIG_CC_IS_CLANG=y
 CONFIG_LD_IS_LLD=y
@@ -1673,6 +1673,7 @@ CONFIG_QTI_MAXIM_FAN_CONTROLLER=y
 CONFIG_KINECTICS_XR_NORDIC=y
 CONFIG_HALL_AKM09970=y
 CONFIG_MOTOR_DRV8846=y
+CONFIG_FORCE_FAST_CHARGE=y
 # CONFIG_C2PORT is not set
 
 #
