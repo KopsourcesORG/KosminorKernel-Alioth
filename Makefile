@@ -723,13 +723,8 @@ endif
 
 # MLGO optimization for inliner
 ifeq ($(call cc-option-yn, -mllvm -enable-ml-inliner=release),y)
-ifeq ($(call cc-option-yn, -mllvm -ml-inliner-model-selector=arm64-mixed),y)
 KBUILD_CFLAGS += -mllvm -enable-ml-inliner=release
-KBUILD_CFLAGS += -mllvm -ml-inliner-model-selector=arm64-mixed
-
 KBUILD_LDFLAGS += -mllvm -enable-ml-inliner=release
-KBUILD_LDFLAGS += -mllvm -ml-inliner-model-selector=arm64-mixed
-endif
 endif
 endif
 
