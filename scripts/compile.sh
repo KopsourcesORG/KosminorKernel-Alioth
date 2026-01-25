@@ -13,6 +13,8 @@ KBUILD_BUILD_USER="$(whoami)"
 KBUILD_BUILD_HOST="$(hostname)"
 CLEAN_BUILD="false"
 
+BUILD_START=$(date +"%s")
+
 show_help() {
     echo ""
     echo -e "${GREEN}Usage:${NC} $0 [OPTIONS]"
@@ -160,3 +162,7 @@ compile () {
 }
 
 compile 2>&1 | tee -a out/compile.log
+
+BUILD_END=$(date +"%s")
+DIFF=$((BUILD_END - BUILD_START))
+echo -e "${GREEN}Build completed in $((DIFF / 60)) minute(s) and $((DIFF % 60)) seconds${NC}"
