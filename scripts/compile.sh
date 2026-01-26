@@ -12,6 +12,7 @@ DEFCONFIG=""
 KBUILD_BUILD_USER="$(whoami)"
 KBUILD_BUILD_HOST="$(hostname)"
 CLEAN_BUILD="false"
+ENABLE_CCACHE="false"
 
 BUILD_START=$(date +"%s")
 
@@ -25,11 +26,16 @@ show_help() {
     echo "  -u, --user <name>         Set KBUILD_BUILD_USER (Default: $(whoami))"
     echo "  -H, --host <name>         Set KBUILD_BUILD_HOST (Default: $(hostname))"
     echo "      --clean               Clean build output before compiling"
+    echo "      --ccache              Enable ccache for faster rebuilds"
     echo "  -h, --help                Show this help message"
     echo ""
     echo "Example:"
     echo "  $0 -d rve_defconfig -c toolchain/aosp-clang"
 }
+
+_CC_clang="clang"
+_CC_host="clang"
+_CXX_host="clang++"
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -73,6 +79,10 @@ while [ $# -gt 0 ]; do
             CLEAN_BUILD="true"
             shift
             ;;
+        --ccache)
+            ENABLE_CCACHE="true"
+            shift
+            ;;
         -h|--help)
             show_help
             exit 0
@@ -111,6 +121,15 @@ echo -e "${GREEN}Using CLANG_DIR: $CLANG_DIR${NC}"
 echo -e "${GREEN}Using KBUILD_BUILD_USER: $KBUILD_BUILD_USER${NC}"
 echo -e "${GREEN}Using KBUILD_BUILD_HOST: $KBUILD_BUILD_HOST${NC}"
 
+if [ "$ENABLE_CCACHE" = "true" ]; then
+    echo -e "${GREEN}Using ccache${NC}"
+    _CC_clang="ccache clang"
+    _CC_host="ccache clang"
+    _CXX_host="ccache clang++"
+    export CCACHE_EXEC=$(which ccache)
+    export USE_CCACHE=1
+fi
+
 if [ "$CLEAN_BUILD" = "true" ]; then
     if [ -d "out" ]; then
         echo ""
@@ -145,7 +164,7 @@ make O=out ARCH=arm64 $DEFCONFIG
 compile () {
     make -j$(nproc --all) O=out LLVM=1 LLVM_IAS=1 \
     ARCH=arm64 \
-    CC=clang \
+    CC="$_CC_clang" \
     LD=ld.lld \
     AR=llvm-ar \
     AS=llvm-as \
@@ -154,8 +173,8 @@ compile () {
     OBJCOPY=llvm-objcopy \
     OBJDUMP=llvm-objdump \
     READELF=llvm-readelf \
-    HOSTCC=clang \
-    HOSTCXX=clang++ \
+    HOSTCC="$_CC_host" \
+    HOSTCXX="$_CXX_host" \
     HOSTAR=llvm-ar \
     HOSTLD=ld.lld \
     CROSS_COMPILE=arm64-linux-gnu-
