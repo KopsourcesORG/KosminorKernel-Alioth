@@ -162,7 +162,7 @@ export PATH="$CLANG_DIR/bin:$PATH"
 make O=out ARCH=arm64 $DEFCONFIG
 
 compile () {
-    make -j$(nproc --all) O=out LLVM=1 LLVM_IAS=1 \
+    make -j$(nproc --all) O=out LLVM=1 \
     ARCH=arm64 \
     CC="$_CC_clang" \
     LD=ld.lld \
