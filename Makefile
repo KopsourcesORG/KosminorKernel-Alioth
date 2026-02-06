@@ -811,6 +811,7 @@ stackp-flags-$(CONFIG_STACKPROTECTOR_STRONG)      := -fstack-protector-strong
 KBUILD_CFLAGS += $(stackp-flags-y)
 
 ifdef CONFIG_CC_IS_CLANG
+<<<<<<< HEAD
 # Clang may emit a warning when a const variable, such as the dummy variables
 # in typecheck(), or const member of an aggregate type are not initialized,
 # which can result in unexpected behavior. However, in many audited cases of
@@ -823,6 +824,8 @@ ifdef CONFIG_CC_IS_CLANG
 # is used.
 KBUILD_CFLAGS += $(call cc-disable-warning, default-const-init-unsafe)
 
+=======
+>>>>>>> 6fcac56423a0 (Merge android_kernel_qcom_sm8250 into lineage-23.2)
 ifneq ($(CROSS_COMPILE),)
 CLANG_TRIPLE	?= $(CROSS_COMPILE)
 CLANG_TARGET	:= --target=$(notdir $(CLANG_TRIPLE:%-=%))
