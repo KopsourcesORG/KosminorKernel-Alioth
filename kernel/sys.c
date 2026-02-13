@@ -1246,8 +1246,7 @@ SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 
 	down_read(&uts_sem);
 	memcpy(&tmp, utsname(), sizeof(tmp));
-<<<<<<< HEAD
-=======
+
 #ifdef CONFIG_KSU_SUSFS_SPOOF_UNAME
 	susfs_spoof_uname(&tmp);
 #endif
@@ -1259,7 +1258,7 @@ SYSCALL_DEFINE1(newuname, struct new_utsname __user *, name)
 		pr_debug("fake uname: %s release=%s\n",
 			 current->comm, tmp.release);
 	}
->>>>>>> 2264fe4e989a (fixup! syscall: Increase bpf fake uname to 5.10.240)
+
 	up_read(&uts_sem);
 	if (copy_to_user(name, &tmp, sizeof(tmp)))
 		return -EFAULT;
