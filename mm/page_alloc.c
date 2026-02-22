@@ -2717,7 +2717,6 @@ static int rmqueue_bulk(struct zone *zone, unsigned int order,
 			unsigned long count, struct list_head *list,
 			int migratetype, unsigned int alloc_flags)
 {
-	int i, alloced = 0;
 	const bool can_resched = !preempt_count() && !irqs_disabled();
 	int i, alloced = 0, last_mod = 0;
 	struct list_head *prev_tail = list->prev;
