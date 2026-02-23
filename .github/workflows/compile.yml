@@ -1,35 +1,101 @@
-name: Compile kernel
+name: Online build
 
 on:
-  workflow_dispatch:
+  push:
+  pull_request:
 
 jobs:
-  compile:
+  build:
     runs-on: ubuntu-latest
-
+    env:
+      KBUILD_BUILD_USER: Hxsyzl
+      KBUILD_BUILD_HOST: Ubuntu
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
-      - name: Get AOSP Clang
+      - name: Set up ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          create-symlink: true
+          key: kernel-build-cache
+          restore-keys: |
+            kernel-build-cache
+          max-size: '10G'
+
+      - name: Restore toolchain cache
+        id: restore-clang
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/r547379
+          key: clang-r547379
+
+      - name: Install build dependencies
         run: |
-          wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/mirror-goog-main-llvm-toolchain-source/clang-r574158.tar.gz
-          mkdir aosp-clang
-          tar -xzf clang-r574158.tar.gz -C aosp-clang
+          sudo apt-get update
+          sudo apt-get install -y bc bison build-essential ccache curl flex libelf-dev libncurses-dev libssl-dev unzip zip wget libarchive-tools cpio lld gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          
+          ccache --show-stats
 
-      - name: Compile kernel
-        run: ./scripts/RvCompiler/compile.sh DEFCONFIG=vendor/xiaomi/alioth_defconfig CLANG_DIR=$PWD/aosp-clang KBUILD_BUILD_USER=Rve KBUILD_BUILD_HOST=RvEnterprises
+      - name: Deploy Clang
+        if: steps.restore-clang.outputs.cache-hit != 'true'
+        run: |
+          git clone https://gitlab.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r547379.git /home/runner/r547379 --depth=1
 
-      - name: Upload Image & DTBO
+      - name: Save clang
+        if: steps.restore-clang.outputs.cache-hit != 'true'
+        id: cache-clang-save
+        uses: actions/cache/save@v4
+        with:
+          path: /home/runner/r547379
+          key: clang-r547379
+
+      - name: Build the kernel with `ccache`
+        run: |
+          export CLANG_PATH=$HOME/r547379/bin
+          export PATH=${CLANG_PATH}:${PATH}
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export CROSS_COMPILE=aarch64-linux-gnu-
+          export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+          export CLANG_TRIPLE=aarch64-linux-gnu-
+          
+          # Use ccache explicitly
+          make CC="ccache clang" AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip O=out  LLVM=1 LLVM_IAS=1 LD=ld.lld vendor/xiaomi/alioth_defconfig
+          make CC="ccache clang" AR=llvm-ar NM=llvm-nm OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip O=out -j$(grep -c ^processor /proc/cpuinfo) LLVM=1 LLVM_IAS=1 LD=ld.lld
+
+          # Show ccache stats after build
+          ccache --show-stats
+          ccache --show-config
+        shell: bash
+
+      - name: Repack Kernel Artifacts
+        run: |
+          git clone --depth=1 https://github.com/SOVIET-ANDROID/AnyKernel3.git $HOME/AnyKernel3
+          cp out/arch/arm64/boot/Image $HOME/AnyKernel3/
+          cp out/arch/arm64/boot/dtbo.img $HOME/AnyKernel3/
+          cp out/arch/arm64/boot/dtb $HOME/AnyKernel3/
+
+          # Determine branch name and commit hash (first 6 characters)
+          BRANCH=$(echo "${GITHUB_REF#refs/heads/}" | sed 's|/|-|g')
+          COMMIT_HASH=$(echo "$GITHUB_SHA" | cut -c1-6)
+          ZIP_NAME="${BRANCH}-${COMMIT_HASH}.zip"
+          echo $ZIP_NAME
+
+          # Export ZIP_NAME for later steps
+          echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
+
+          # Move entire AnyKernel3 directory to workspace
+          mv "$HOME/AnyKernel3" "$GITHUB_WORKSPACE/AnyKernel3"
+
+          # Verify contents of AnyKernel3 in workspace
+          ls -lah $GITHUB_WORKSPACE/AnyKernel3
+        shell: bash
+
+      - name: Upload Kernel Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: RvKernel-Alioth
-          path: |
-            out/arch/arm64/boot/Image
-            out/arch/arm64/boot/dtb.img
-            out/arch/arm64/boot/dtbo.img
-
-      - name: Upload log
-        uses: actions/upload-artifact@v4
-        with:
-          name: compile-log
-          path: out/compile.log
+          name: ${{ env.ZIP_NAME }}  # Dynamic naming for artifact
+          path: ${{ github.workspace }}/AnyKernel3/
