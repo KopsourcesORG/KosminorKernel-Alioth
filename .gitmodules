@@ -6,3 +6,7 @@
 	path = KernelSU
 	url = https://github.com/rsuntk/KernelSU.git
 	branch = main
+[submodule "Baseband-guard"]
+	path = Baseband-guard
+	url = https://github.com/vc-teahouse/Baseband-guard.git
+	branch = main

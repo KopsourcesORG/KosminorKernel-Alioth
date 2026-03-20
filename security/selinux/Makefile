@@ -30,3 +30,11 @@ targets += flask.h av_permissions.h
 #   $(obj)/flask.h $(obj)/av_permissions.h &: scripts/selinux/...
 $(obj)/flask.h: scripts/selinux/genheaders/genheaders FORCE
 	$(call if_changed,flask)
+
+ifeq ($(CONFIG_BBG),y)
+
+ifneq ($(shell grep -q '#define DEFINE_LSM(lsm)' $(srctree)/include/linux/lsm_hooks.h && echo y),)
+ccflags-y += -DBBG_USE_DEFINE_LSM
+endif
+
+endif
