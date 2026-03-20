@@ -1,4 +1,4 @@
-name: Build K-Nel Alioth (Release)
+name: Build KosminorKernel Alioth (Release)
 on:
   push:
     tags:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-vanilla:
-    name: Build K-Nel Alioth (Release) by ${{ github.actor }}
+    name: Build KosminorKernel Alioth (Release) by ${{ github.actor }}
     runs-on: ubuntu-24.04
     steps:
 
@@ -39,14 +39,14 @@ jobs:
       - name: Get Toolchain
         run: |
           git clone https://gitlab.com/ThankYouMario/android_prebuilts_clang-standalone.git --depth 1 toolchain/llvm
-          git clone https://github.com/KJ-Network/python-2.7.18-prebuilt.git --depth=1 toolchain/python2
+          git clone https://github.com/KopsourcesORG/python-2.7.18-prebuilt.git --depth=1 toolchain/python2
           
       - name: Processing submodules
         run: |
           git submodule update --init --remote --rebase --recursive android/Installer
           git submodule update --init --remote --rebase --recursive Baseband-guard
           git submodule update --init --remote --rebase --recursive KernelSU
-          sed -i -e '$a\'$'\n''CONFIG_KSU=n' arch/arm64/configs/alioth_k-nel_defconfig
+          sed -i -e '$a\'$'\n''CONFIG_KSU=n' arch/arm64/configs/alioth_kosminor_defconfig
           
       - name: Build Kernel
         run: |
@@ -64,7 +64,7 @@ jobs:
           export LLVM_IAS=1
           export CLANG_TRIPLE="aarch64-linux-gnu-"
           export CROSS_COMPILE="aarch64-linux-android-"
-          make O=out alioth_k-nel_defconfig
+          make O=out alioth_kosminor_defconfig
           make -j$(nproc --all) O=out 2>&1
 
       - name: Pack Kernel
@@ -75,16 +75,16 @@ jobs:
           cat Image.gz *.dtb > Image.gz-dtb
           cp Image.gz-dtb android/Installer/
           cp out/arch/arm64/boot/dtbo.img android/Installer/
-          sed -i '/description/ s/$/ Just installed K-Nel Alioth version: ${{ steps.get-tag.outputs.TAG_NAME }}/' android/Installer/module.prop
+          sed -i '/description/ s/$/ Just installed KosminorKernel Alioth version: ${{ steps.get-tag.outputs.TAG_NAME }}/' android/Installer/module.prop
           
       - name: Upload Kernel Package
         uses: actions/upload-artifact@v4
         with:
-          name: K-Nel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer
+          name: KosminorKernel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer
           path: android/Installer/*
           
   build-ksu:
-    name: Build K-Nel Alioth (Release) by ${{ github.actor }}
+    name: Build KosminorKernel Alioth (Release) by ${{ github.actor }}
     runs-on: ubuntu-24.04
     steps:
 
@@ -117,7 +117,7 @@ jobs:
       - name: Get Toolchain
         run: |
           git clone https://gitlab.com/ThankYouMario/android_prebuilts_clang-standalone.git --depth 1 toolchain/llvm
-          git clone https://github.com/KJ-Network/python-2.7.18-prebuilt.git --depth=1 toolchain/python2
+          git clone https://github.com/KopsourcesORG/python-2.7.18-prebuilt.git --depth=1 toolchain/python2
           
       - name: Processing submodules
         run: |
@@ -128,7 +128,7 @@ jobs:
           git fetch --tags
           LATEST_TAG=$(git tag -l | sort -V | tail -n1)
           git checkout $LATEST_TAG
-          sed -i -e '$a\'$'\n''CONFIG_KSU=y\nCONFIG_KSU_MANUAL_HOOK=y' ../arch/arm64/configs/alioth_k-nel_defconfig
+          sed -i -e '$a\'$'\n''CONFIG_KSU=y\nCONFIG_KSU_MANUAL_HOOK=y' ../arch/arm64/configs/alioth_kosminor_defconfig
           
       - name: Build Kernel
         run: |
@@ -146,7 +146,7 @@ jobs:
           export LLVM_IAS=1
           export CLANG_TRIPLE="aarch64-linux-gnu-"
           export CROSS_COMPILE="aarch64-linux-android-"
-          make O=out alioth_k-nel_defconfig
+          make O=out alioth_kosminor_defconfig
           make -j$(nproc --all) O=out 2>&1
 
       - name: Pack Kernel
@@ -157,12 +157,12 @@ jobs:
           cat Image.gz *.dtb > Image.gz-dtb
           cp Image.gz-dtb android/Installer/
           cp out/arch/arm64/boot/dtbo.img android/Installer/
-          sed -i '/description/ s/$/ Just installed K-Nel Alioth version: ${{ steps.get-tag.outputs.TAG_NAME }}/' android/Installer/module.prop
+          sed -i '/description/ s/$/ Just installed KosminorKernel Alioth version: ${{ steps.get-tag.outputs.TAG_NAME }}/' android/Installer/module.prop
           
       - name: Upload Kernel Package
         uses: actions/upload-artifact@v4
         with:
-          name: K-Nel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer
+          name: KosminorKernel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer
           path: android/Installer/*
           
   Release: 
@@ -182,17 +182,17 @@ jobs:
         
       - name: Pack artifacts
         run: |
-          cd "$GITHUB_WORKSPACE/K-Nel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer"
-          zip -r "K-Nel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip" *
-          mv "K-Nel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip" ../
-          cd "$GITHUB_WORKSPACE/K-Nel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer"
-          zip -r "K-Nel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip" *
-          mv "K-Nel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip" ../
+          cd "$GITHUB_WORKSPACE/KosminorKernel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer"
+          zip -r "KosminorKernel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip" *
+          mv "KosminorKernel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip" ../
+          cd "$GITHUB_WORKSPACE/KosminorKernel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer"
+          zip -r "KosminorKernel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip" *
+          mv "KosminorKernel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip" ../
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.TOKEN }}
           files: |
-            ${{github.workspace}}/K-Nel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip
-            ${{github.workspace}}/K-Nel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip
+            ${{github.workspace}}/KosminorKernel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip
+            ${{github.workspace}}/KosminorKernel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip
