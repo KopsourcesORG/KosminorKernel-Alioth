@@ -50,7 +50,7 @@ jobs:
           git fetch --tags
           LATEST_TAG=$(git tag -l | sort -V | tail -n1)
           git checkout $LATEST_TAG
-          sed -i -e '$a\'$'\n''CONFIG_KSU=y\nCONFIG_KSU_MANUAL_HOOK=y' ../arch/arm64/configs/alioth_kosminor_defconfig
+          sed -i -e '$a\'$'\n''CONFIG_KSU=y\nCONFIG_KSU_TAMPER_SYSCALL_TABLE=y\nCONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED=y' ../arch/arm64/configs/alioth_kosminor_defconfig
           
       - name: Build Kernel
         run: |
