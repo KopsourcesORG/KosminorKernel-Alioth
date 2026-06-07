@@ -135,7 +135,20 @@ all.config
 # fetched Android config fragments
 kernel/configs/android-*.cfg
 
+<<<<<<< HEAD
 #
 #Ignoring Android.bp link file
 #
 Android.bp
+=======
+# out directory
+out/
+
+# backups
+*.bak
+
+# patches
+*.orig
+*.rej
+*.patch
+>>>>>>> 94fb29d8e37e (Kosminor: add kosminor features)

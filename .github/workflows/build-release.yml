@@ -1,0 +1,184 @@
+name: Build KosminorKernel Alioth (Release)
+on:
+  push:
+    tags:
+      - "R-*"
+
+jobs:
+  build-vanilla:
+    name: Build KosminorKernel Alioth (Release) by ${{ github.actor }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Set SWAP to 5GiB
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 5
+          
+      - name: Get Tag Name
+        id: get-tag
+        run: |
+          echo "TAG_NAME=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
+
+      - name: Initialize Compilation Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install git automake build-essential bc -y
+          
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Get Toolchain
+        run: |
+          git clone https://gitlab.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r547379.git --depth 1 toolchain/llvm
+          git clone https://github.com/KopsourcesORG/python-2.7.18-prebuilt.git --depth=1 toolchain/python2
+          
+      - name: Processing submodules
+        run: |
+          git submodule update --init --remote --rebase --recursive android/Installer
+          git submodule update --init --remote --rebase --recursive Baseband-guard
+          git submodule update --init --remote --rebase --recursive KernelSU
+          sed -i -e '$a\'$'\n''CONFIG_KSU=n' arch/arm64/configs/alioth_kosminor_defconfig
+          
+      - name: Build Kernel
+        run: |
+          export LOCALVERSION=${{ steps.get-tag.outputs.TAG_NAME }}
+          export KBUILD_BUILD_HOST=Github-Action
+          export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
+          export ARCH="arm64"
+          export SUBARCH="arm64"
+          export PATH="$GITHUB_WORKSPACE/toolchain/llvm/bin:$GITHUB_WORKSPACE/toolchain/python2/bin:$PATH"
+          export LD_LIBRARY_PATH="$GITHUB_WORKSPACE/toolchain/llvm/lib64:$GITHUB_WORKSPACE/toolchain/python2/lib:$LD_LIBRARY_PATH"
+          export KBUILD_COMPILER_STRING=$(clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')
+          export KBUILD_LINKER_STRING=$(ld.lld --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//' | sed 's/(compatible with [^)]*)//')
+          export CC=clang
+          export LLVM=1
+          export LLVM_IAS=1
+          export CLANG_TRIPLE="aarch64-linux-gnu-"
+          export CROSS_COMPILE="aarch64-linux-android-"
+          make O=out alioth_kosminor_defconfig
+          make -j$(nproc --all) O=out
+
+      - name: Pack Kernel
+        run: |
+          cp out/arch/arm64/boot/Image .
+          cp out/arch/arm64/boot/dts/vendor/qcom/*.dtb .
+          gzip -k Image Image.gz
+          cat Image.gz *.dtb > Image.gz-dtb
+          cp Image.gz-dtb android/Installer/
+          cp out/arch/arm64/boot/dtbo.img android/Installer/
+          sed -i '/description/ s/$/ Just installed KosminorKernel Alioth version: ${{ steps.get-tag.outputs.TAG_NAME }}/' android/Installer/module.prop
+          
+      - name: Upload Kernel Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: KosminorKernel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer
+          path: android/Installer/*
+          
+  build-ksu:
+    name: Build KosminorKernel Alioth (Release) by ${{ github.actor }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Set SWAP to 5GiB
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 5
+          
+      - name: Get Tag Name
+        id: get-tag
+        run: |
+          echo "TAG_NAME=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
+
+      - name: Initialize Compilation Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install git automake build-essential bc -y
+          
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Get Toolchain
+        run: |
+          git clone https://gitlab.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r547379.git --depth 1 toolchain/llvm
+          git clone https://github.com/KopsourcesORG/python-2.7.18-prebuilt.git --depth=1 toolchain/python2
+          
+      - name: Processing submodules
+        run: |
+          git submodule update --init --remote --rebase --recursive android/Installer
+          git submodule update --init --remote --rebase --recursive Baseband-guard
+          git submodule update --init --remote --rebase --recursive KernelSU
+          cd KernelSU
+          git fetch --tags
+          LATEST_TAG=$(git tag -l | sort -V | tail -n1)
+          git checkout $LATEST_TAG
+          sed -i -e '$a\'$'\n''CONFIG_KSU=y\nCONFIG_KSU_TAMPER_SYSCALL_TABLE=y\nCONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED=y\nCONFIG_KSU_FEATURE_ADBROOT=y\nCONFIG_KSU_FEATURE_SULOG=y' ../arch/arm64/configs/alioth_kosminor_defconfig
+          
+      - name: Build Kernel
+        run: |
+          export LOCALVERSION=${{ steps.get-tag.outputs.TAG_NAME }}
+          export KBUILD_BUILD_HOST=Github-Action
+          export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
+          export ARCH="arm64"
+          export SUBARCH="arm64"
+          export PATH="$GITHUB_WORKSPACE/toolchain/llvm/bin:$GITHUB_WORKSPACE/toolchain/python2/bin:$PATH"
+          export LD_LIBRARY_PATH="$GITHUB_WORKSPACE/toolchain/llvm/lib64:$GITHUB_WORKSPACE/toolchain/python2/lib:$LD_LIBRARY_PATH"
+          export KBUILD_COMPILER_STRING=$(clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')
+          export KBUILD_LINKER_STRING=$(ld.lld --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//' | sed 's/(compatible with [^)]*)//')
+          export CC=clang
+          export LLVM=1
+          export LLVM_IAS=1
+          export CLANG_TRIPLE="aarch64-linux-gnu-"
+          export CROSS_COMPILE="aarch64-linux-android-"
+          make O=out alioth_kosminor_defconfig
+          make -j$(nproc --all) O=out
+
+      - name: Pack Kernel
+        run: |
+          cp out/arch/arm64/boot/Image .
+          cp out/arch/arm64/boot/dts/vendor/qcom/*.dtb .
+          gzip -k Image Image.gz
+          cat Image.gz *.dtb > Image.gz-dtb
+          cp Image.gz-dtb android/Installer/
+          cp out/arch/arm64/boot/dtbo.img android/Installer/
+          sed -i '/description/ s/$/ Just installed KosminorKernel Alioth version: ${{ steps.get-tag.outputs.TAG_NAME }}/' android/Installer/module.prop
+          
+      - name: Upload Kernel Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: KosminorKernel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer
+          path: android/Installer/*
+          
+  Release: 
+    needs:
+      - build-vanilla
+      - build-ksu
+    runs-on: ubuntu-latest
+    steps:
+      
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        
+      - name: Get Tag Name
+        id: get-tag
+        run: |
+          echo "TAG_NAME=$(echo $GITHUB_REF | cut -d'/' -f3)" >> $GITHUB_OUTPUT
+        
+      - name: Pack artifacts
+        run: |
+          cd "$GITHUB_WORKSPACE/KosminorKernel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer"
+          zip -r "KosminorKernel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip" *
+          mv "KosminorKernel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip" ../
+          cd "$GITHUB_WORKSPACE/KosminorKernel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer"
+          zip -r "KosminorKernel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip" *
+          mv "KosminorKernel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip" ../
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.TOKEN }}
+          files: |
+            ${{github.workspace}}/KosminorKernel_Alioth_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip
+            ${{github.workspace}}/KosminorKernel_Alioth_KSU_${{ steps.get-tag.outputs.TAG_NAME }}_Installer.zip
