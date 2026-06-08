@@ -295,8 +295,7 @@ static int kvp_key_delete(int pool, const __u8 *key, int key_size)
 		j = i;
 		k = j + 1;
 		for (; k < num_records; k++) {
-			strcpy(record[j].key, record[k].key);
-			strcpy(record[j].value, record[k].value);
+			record[j] = record[k];
 			j++;
 		}
 
