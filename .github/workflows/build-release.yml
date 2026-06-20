@@ -22,7 +22,7 @@ jobs:
       - name: Initialize Compilation Environment
         run: |
           sudo apt-get update
-          sudo apt-get install git automake build-essential bc -y
+          sudo apt-get install git automake build-essential bc python-is-python3 -y
           
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -32,7 +32,6 @@ jobs:
       - name: Get Toolchain
         run: |
           git clone https://gitlab.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r547379.git --depth 1 toolchain/llvm
-          git clone https://github.com/KopsourcesORG/python-2.7.18-prebuilt.git --depth=1 toolchain/python2
           
       - name: Processing submodules
         run: |
@@ -48,8 +47,8 @@ jobs:
           export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
           export ARCH="arm64"
           export SUBARCH="arm64"
-          export PATH="$GITHUB_WORKSPACE/toolchain/llvm/bin:$GITHUB_WORKSPACE/toolchain/python2/bin:$PATH"
-          export LD_LIBRARY_PATH="$GITHUB_WORKSPACE/toolchain/llvm/lib64:$GITHUB_WORKSPACE/toolchain/python2/lib:$LD_LIBRARY_PATH"
+          export PATH="$GITHUB_WORKSPACE/toolchain/llvm/bin:$PATH"
+          export LD_LIBRARY_PATH="$GITHUB_WORKSPACE/toolchain/llvm/lib64:$LD_LIBRARY_PATH"
           export KBUILD_COMPILER_STRING=$(clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')
           export KBUILD_LINKER_STRING=$(ld.lld --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//' | sed 's/(compatible with [^)]*)//')
           export CC=clang
@@ -93,7 +92,7 @@ jobs:
       - name: Initialize Compilation Environment
         run: |
           sudo apt-get update
-          sudo apt-get install git automake build-essential bc -y
+          sudo apt-get install git automake build-essential bc python-is-python3 -y
           
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -103,7 +102,6 @@ jobs:
       - name: Get Toolchain
         run: |
           git clone https://gitlab.com/crdroidandroid/android_prebuilts_clang_host_linux-x86_clang-r547379.git --depth 1 toolchain/llvm
-          git clone https://github.com/KopsourcesORG/python-2.7.18-prebuilt.git --depth=1 toolchain/python2
           
       - name: Processing submodules
         run: |
@@ -123,8 +121,8 @@ jobs:
           export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
           export ARCH="arm64"
           export SUBARCH="arm64"
-          export PATH="$GITHUB_WORKSPACE/toolchain/llvm/bin:$GITHUB_WORKSPACE/toolchain/python2/bin:$PATH"
-          export LD_LIBRARY_PATH="$GITHUB_WORKSPACE/toolchain/llvm/lib64:$GITHUB_WORKSPACE/toolchain/python2/lib:$LD_LIBRARY_PATH"
+          export PATH="$GITHUB_WORKSPACE/toolchain/llvm/bin:$PATH"
+          export LD_LIBRARY_PATH="$GITHUB_WORKSPACE/toolchain/llvm/lib64:$LD_LIBRARY_PATH"
           export KBUILD_COMPILER_STRING=$(clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')
           export KBUILD_LINKER_STRING=$(ld.lld --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//' | sed 's/(compatible with [^)]*)//')
           export CC=clang
